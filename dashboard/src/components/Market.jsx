@@ -161,6 +161,7 @@ function SectorTable({ groups, onSelect }) {
             <th className="py-2 pr-2 text-right font-normal">T1 비율</th>
             <th className="py-2 pr-2 text-right font-normal">종합</th>
             <th className="py-2 pr-2 text-right font-normal">모멘텀</th>
+            <th className="py-2 pr-2 text-right font-normal"><span className="inline-flex items-center gap-1">EPS 상향<InfoTip k="eps_up" /></span></th>
             <th className="py-2 pr-2 text-right font-normal">3M</th>
             <th className="py-2 pr-2 text-right font-normal">고점 근접</th>
             <th className="py-2 text-right font-normal">200일선 위</th>
@@ -180,13 +181,14 @@ function SectorTable({ groups, onSelect }) {
                 <td className="num py-2 pr-2 text-right text-gray-200">{fmt.pctPlain(g.t1_share)}</td>
                 <td className="num py-2 pr-2 text-right text-gray-300">{fmt.n(g.composite)}</td>
                 <td className="num py-2 pr-2 text-right text-gray-300">{fmt.n(g.momentum)}</td>
+                <td className={`num py-2 pr-2 text-right ${g.eps_up >= 0.5 ? 'text-emerald-400' : 'text-gray-300'}`} title={`EPS 추정치 자료 ${g.eps_n}종목 중`}>{fmt.pctPlain(g.eps_up)}</td>
                 <td className={`num py-2 pr-2 text-right ${g.ret_3m >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt.pct(g.ret_3m)}</td>
                 <td className="num py-2 pr-2 text-right text-gray-300">{fmt.pctPlain(g.near_high)}</td>
                 <td className="num py-2 text-right text-gray-300">{fmt.pctPlain(g.above_ma200)}</td>
               </tr>
               {open === g.name && (
                 <tr className="border-b border-gray-800/50">
-                  <td colSpan={9} className="py-2">
+                  <td colSpan={10} className="py-2">
                     <div className="flex flex-wrap gap-1.5">
                       {g.members.map(([t, name, tier]) => (
                         <button key={t} onClick={() => onSelect(t)} className="flex items-center gap-1 rounded-md bg-gray-900 px-2 py-1 text-xs text-gray-200 hover:bg-gray-800">

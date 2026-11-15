@@ -21,7 +21,7 @@ from typing import Any
 
 from . import config as C
 from . import market as market_view
-from . import tracking
+from . import risk, tracking
 from .data import fetch, fetch_benchmark, market_of, normalize_ticker
 from .metrics import compute_raw
 from .portfolio import load_beta_model, macro_for, model_portfolio
@@ -194,6 +194,11 @@ def main() -> None:
             log.info("%s 등급 변화: %d건 (직전 %s) · 시장 변화 %d건", m, len(ch["items"]), ch["prev"], len(mlines))
         mk["changes"] = tracking.last_changes(m, {t: r["name"] for t, r in stocks.items()})
         mk["timeline"] = tracking.timelines(m)
+    try:
+        risk.write({m: [*payload["markets"][m]["stocks"], *(payload["markets"][m].get("extra") or {})]
+                    for m in payload["markets"]})
+    except Exception as e:  # noqa: BLE001 — 위험 데이터 실패가 채점 결과 저장을 막지 않게
+        log.warning("위험 데이터 실패: %s", e)
     if args.track:
         tracking.publish_live()
         if alerts:

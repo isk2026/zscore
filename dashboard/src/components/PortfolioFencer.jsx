@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus, Trash2, ShieldCheck, ShieldAlert, RotateCcw } from 'lucide-react'
 import { TIER_COLOR, FLAG_META, LS, fmt } from '../lib.js'
 import ModelPortfolio from './ModelPortfolio.jsx'
+import RiskPanel from './RiskPanel.jsx'
 
 const DEFAULT = [
   { ticker: 'NVDA', w: 9 }, { ticker: 'AVGO', w: 7 }, { ticker: 'MU', w: 6 }, { ticker: '000660.KS', w: 8 },
@@ -220,6 +221,7 @@ export default function PortfolioFencer({ data, universe, extra }) {
           </div>
         </section>
       </div>
+      <RiskPanel rows={rows} />
       <p className="text-[11px] text-gray-600">보유 비중은 이 브라우저에만 저장됩니다. 투자 {fmt.pctPlain(total)} 기준.</p>
     </div>
   )

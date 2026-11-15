@@ -76,3 +76,16 @@ def test_update_state_baseline_then_changes_once():
     text = "\n".join(lines)
     assert "시장폭 괴리" in text and "강함 → 중립" in text and "기술: 주도 → <b>약화</b>" in text
     assert M.update_state("US", _view(zone="중립", div=True, q="약화", week="2026-11-13", a200=0.5)) == []
+
+
+def test_risk_window_return_and_drawdown():
+    from zscore import risk as R
+
+    d = pd.bdate_range("2024-01-01", periods=300)
+    s = pd.Series(np.r_[np.linspace(100, 150, 150), np.linspace(150, 90, 100), np.linspace(90, 110, 50)], index=d)
+    # 시작 전날 종가 → 종료일 종가
+    assert R.window_return(s, d[150].strftime("%F"), d[249].strftime("%F")) == pytest.approx(90 / s.iloc[149] - 1)
+    assert R.window_return(s, "2020-01-01", "2020-02-01") is None   # 자료 이전 구간
+    start, end, dd = R.max_drawdown_window(s, 300)
+    assert end == d[249].strftime("%F") and dd == pytest.approx(90 / 150 - 1)
+    assert R.window_return(s, start, end) == pytest.approx(dd)       # 같은 규칙으로 재현됨

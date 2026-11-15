@@ -177,6 +177,18 @@ DIVERGENCE = {"index_near_high": 0.97, "drop": 0.15, "lookback": 63}
 # RS-Ratio = 100 × RS / RS 10주 평균 · RS-Momentum = 100 × Ratio / 4주 전 Ratio
 RRG = {"ma_weeks": 10, "mom_weeks": 4, "tail": 8, "min_members": 3}
 MARKET_STATE_PATH = ROOT / "data" / "market_state.json"
+
+# ── 울타리 탭: 포트폴리오 위험 (상관·변동성·베타·과거 하락장·환율) ───────────
+RISK_PATH = ROOT / "dashboard" / "public" / "data" / "risk.json"
+RISK_WEEKS = 104                   # 주간 수익률 2년 (한국·미국 장 마감 시차를 피하려고 일간 대신 주간)
+FX_SYMBOL = "KRW=X"                # USD/KRW
+CORR_CLUSTER = 0.60                # 평균 상관 ≥ 0.6 인 종목끼리 '사실상 같은 베팅'으로 묶는다
+STRESS_WINDOWS = [                 # 과거 하락 구간 재현 (시작 전날 종가 → 종료일 종가)
+    {"name": "2022 금리 인상 하락장", "start": "2022-01-03", "end": "2022-10-12"},
+    {"name": "2024-08 엔캐리 청산", "start": "2024-07-31", "end": "2024-08-05"},
+    {"name": "2025-04 관세 충격", "start": "2025-04-02", "end": "2025-04-08"},
+]
+# + 시장별 '최근 1년 지수 최대 낙폭 구간' 을 자동으로 추가
 SECTOR_KO = {
     "Technology": "기술", "Consumer Cyclical": "경기소비재", "Healthcare": "헬스케어",
     "Financial Services": "금융", "Industrials": "산업재", "Communication Services": "커뮤니케이션",

@@ -17,3 +17,4 @@
 - 비밀값은 `.env` (커밋 금지)
 - `--track`(등급 이력·실전 기록)은 CI 예약/수동 실행 전용. 로컬에서 돌리면 이력이 갈라진다
 - 시장 탭 계산은 `zscore/market.py`, 임계값은 `config.BREADTH_*`·`DIVERGENCE`·`RRG` (프론트는 `config.market` 을 읽는다)
+- 포트폴리오 위험: 재료는 `zscore/risk.py`(risk.json), 계산은 `RiskPanel.jsx` 의 `analyze` (보유 비중이 브라우저에만 있으므로). 파라미터 `config.RISK_*`·`CORR_CLUSTER`·`STRESS_WINDOWS`

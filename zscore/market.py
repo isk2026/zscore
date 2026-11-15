@@ -124,6 +124,9 @@ def _group_stats(rs: list[dict]) -> dict[str, Any]:
         "ret_3m": _avg(rs, "ret_3m"),
         "near_high": sum((r.get("high52_ratio") or 0) >= C.BREADTH_NEAR_HIGH for r in rs) / n,
         "above_ma200": sum(bool(r.get("above_ma200")) for r in rs) / n,
+        # 영상: "이익 추정치가 올라가는 섹터" — EPS 추정치 30일 변화 > 0 인 종목 비율 (자료 있는 종목 중)
+        "eps_up": (sum(r["eps_revision"] > 0 for r in ev) / len(ev)) if (ev := [r for r in rs if r.get("eps_revision") is not None]) else None,
+        "eps_n": sum(r.get("eps_revision") is not None for r in rs),
         "members": [[r["ticker"], r["name"], r["tier"]] for r in sorted(rs, key=lambda r: (r["tier"], r["name"]))],
     }
 
