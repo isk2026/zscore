@@ -8,9 +8,9 @@ import Backtest from './components/Backtest.jsx'
 import { LS, RUN_URL } from './lib.js'
 
 const TABS = [
-  { id: 'stock', label: '종목 분석', icon: Activity },
+  { id: 'stock', label: '종목 분석', short: '분석', icon: Activity },
   { id: 'screener', label: '스크리너', icon: LayoutGrid },
-  { id: 'fence', label: '포트폴리오 울타리', icon: Shield },
+  { id: 'fence', label: '포트폴리오 울타리', short: '울타리', icon: Shield },
   { id: 'backtest', label: '백테스트', icon: LineChart },
 ]
 
@@ -96,11 +96,11 @@ export default function App() {
       />
       <main className="mx-auto max-w-7xl px-4 pb-16">
         <nav className="flex gap-1 overflow-x-auto py-3" role="tablist">
-          {TABS.map(({ id, label, icon: Icon }) => (
+          {TABS.map(({ id, label, short, icon: Icon }) => (
             <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
-              className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm transition ${
+              className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm transition sm:gap-2 sm:px-3 ${
                 tab === id ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-900 hover:text-gray-200'}`}>
-              <Icon size={16} /> {label}
+              <Icon size={16} className="max-[380px]:hidden" /> <span className="sm:hidden">{short || label}</span><span className="hidden sm:inline">{label}</span>
             </button>
           ))}
         </nav>

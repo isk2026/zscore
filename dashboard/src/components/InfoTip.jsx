@@ -36,7 +36,7 @@ export default function InfoTip({ k, size = 13, className = '' }) {
         ref={btn} type="button" aria-label={`${g.title} 설명`} aria-expanded={!!pos}
         onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={() => { setPinned(false); setPos(null) }}
         onClick={(e) => { e.stopPropagation(); if (pinned) { setPinned(false); setPos(null) } else { setPinned(true); show() } }}
-        className="rounded-full p-0.5 text-gray-500 hover:text-sky-300 focus:text-sky-300 focus:outline-none"
+        className="-m-1.5 rounded-full p-2 text-gray-500 hover:text-sky-300 focus:text-sky-300 focus:outline-none"
       >
         <Info size={size} />
       </button>

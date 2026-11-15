@@ -75,7 +75,7 @@ export default function TopBar({ data, universe, market, setMarket, onSelect, ap
             onFocus={() => setOpen(true)} onKeyDown={onKey}
             placeholder="종목 검색 — NVDA, MRVL, 삼성전자, 005930 …"
             aria-label="종목 검색"
-            className="w-full rounded-lg border border-gray-800 bg-gray-900 py-2 pl-9 pr-3 text-sm text-gray-100 placeholder:text-gray-600 focus:border-gray-600 focus:outline-none"
+            className="w-full rounded-lg border border-gray-800 bg-gray-900 py-2 pl-9 pr-3 text-base text-gray-100 sm:text-sm placeholder:text-gray-600 focus:border-gray-600 focus:outline-none"
           />
           {open && query && (
             <ul className="absolute left-0 right-0 top-full mt-1 max-h-80 overflow-auto rounded-lg border border-gray-800 bg-gray-950 py-1 shadow-xl" role="listbox">

@@ -115,11 +115,12 @@ export default function Backtest({ market, setMarket }) {
         <IcCard label="모멘텀 점수" ic={m.ic.momentum} />
       </section>
 
-      <section className="panel min-w-0 overflow-x-auto p-4">
-        <table className="w-full min-w-[720px] text-sm">
+      <section className="panel min-w-0 p-4">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-gray-800 text-left text-xs text-gray-500">
-              <th className="py-2 pr-3 font-normal">포트폴리오</th>
+              <th className="sticky left-0 z-10 bg-[#111827] py-2 pr-3 font-normal">포트폴리오</th>
               {COLS.map(([k, l, tip]) => (
                 <th key={k} className="py-2 pr-3 text-right font-normal">{l}{tip && <InfoTip k={tip} size={11} className="ml-0.5" />}</th>
               ))}
@@ -130,7 +131,7 @@ export default function Backtest({ market, setMarket }) {
               const s = m.series[k]
               return (
                 <tr key={k} className="border-b border-gray-800/50">
-                  <td className="py-2 pr-3">
+                  <td className="sticky left-0 z-10 bg-[#111827] py-2 pr-3">
                     <span className="mr-2 inline-block h-0.5 w-5 align-middle" style={{ background: STYLE[k].color }} />
                     <span className="text-gray-200">{s.label}</span>
                   </td>
@@ -140,6 +141,7 @@ export default function Backtest({ market, setMarket }) {
             })}
           </tbody>
         </table>
+        </div>
         <p className="mt-2 text-[11px] text-gray-600">
           {a.rebalance}. 해당 등급이 빈 달은 현금(0%). 지수는 가격지수(배당 제외), 종목은 배당 포함 수정주가.
         </p>

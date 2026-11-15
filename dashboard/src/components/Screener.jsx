@@ -103,8 +103,8 @@ export default function Screener({ data, market, setMarket, onSelect }) {
             T{t} {cfg.tiers[t].name} <span className="num text-gray-400">{counts[i]}</span>
           </button>
         ))}
-        <label className="ml-auto flex items-center gap-2 text-xs text-gray-400">
-          <input type="checkbox" checked={hideFlags} onChange={(e) => setHideFlags(e.target.checked)} />
+        <label className="ml-auto flex items-center gap-2 py-1 text-xs text-gray-400">
+          <input type="checkbox" className="h-4 w-4" checked={hideFlags} onChange={(e) => setHideFlags(e.target.checked)} />
           심각 경고 종목 숨기기
         </label>
         <div className="flex rounded-lg border border-gray-800 p-0.5">
@@ -117,18 +117,19 @@ export default function Screener({ data, market, setMarket, onSelect }) {
       <section className="panel p-4">
         <div className="mb-1 flex items-baseline justify-between">
           <h2 className="text-sm font-medium text-gray-300">4-Tier 매트릭스 — {market} 바스켓 {rows.length}종목 <InfoTip k="tier" /></h2>
-          <span className="text-[11px] text-gray-500">점을 누르면 종목 분석으로 이동</span>
+          <span className="hidden text-[11px] text-gray-500 sm:inline">점을 누르면 종목 분석으로 이동</span>
         </div>
         <Matrix rows={filtered} cfg={cfg} onSelect={onSelect} />
       </section>
 
-      <section className="panel overflow-x-auto p-4">
+      <section className="panel p-4">
+        <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] text-sm">
           <thead>
             <tr className="border-b border-gray-800 text-left text-xs text-gray-500">
               {COLS.map(([k, l, tip]) => (
-                <th key={k} className={`py-2 pr-3 font-normal ${k === 'name' ? '' : 'text-right'}`}>
-                  <button className="inline-flex items-center gap-1 hover:text-gray-300"
+                <th key={k} className={`py-2 pr-3 font-normal ${k === 'name' ? 'sticky left-0 z-10 bg-[#111827]' : 'text-right'}`}>
+                  <button className="-my-1 inline-flex items-center gap-1 py-1.5 hover:text-gray-300"
                     onClick={() => setSort((s) => ({ key: k, dir: s.key === k ? -s.dir : -1 }))}>
                     {l} {sort.key === k && <ArrowDownUp size={11} />}
                   </button>
@@ -141,9 +142,9 @@ export default function Screener({ data, market, setMarket, onSelect }) {
           <tbody>
             {filtered.map((r) => (
               <tr key={r.ticker} onClick={() => onSelect(r.ticker)} className="cursor-pointer border-b border-gray-800/50 hover:bg-gray-900">
-                <td className="py-2 pr-3">
-                  <div className="text-gray-100">{r.name}</div>
-                  <div className="font-mono text-[11px] text-gray-500">{r.ticker} · {r.sector}</div>
+                <td className="sticky left-0 z-10 max-w-[9rem] bg-[#111827] py-2 pr-3 sm:max-w-none">
+                  <div className="truncate text-gray-100">{r.name}</div>
+                  <div className="truncate font-mono text-[11px] text-gray-500">{r.ticker} · {r.sector}</div>
                 </td>
                 <td className="py-2 pr-3 text-right">
                   <span className="rounded px-1.5 py-0.5 text-xs font-medium text-white" style={{ background: TIER_COLOR[r.tier] }}>T{r.tier}</span>
@@ -170,6 +171,7 @@ export default function Screener({ data, market, setMarket, onSelect }) {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   )
