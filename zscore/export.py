@@ -20,6 +20,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from . import config as C
+from . import market as market_view
 from . import tracking
 from .data import fetch, fetch_benchmark, market_of, normalize_ticker
 from .metrics import compute_raw
@@ -143,6 +144,8 @@ def main() -> None:
             "fence": C.FENCE,
             "min_traded_value": C.MIN_TRADED_VALUE,
             "benchmark": C.BENCHMARK,
+            "market": {"zones": C.BREADTH_ZONES, "near_high": C.BREADTH_NEAR_HIGH,
+                       "divergence": C.DIVERGENCE, "rrg": C.RRG},
         },
     }
     for m in markets:
@@ -170,11 +173,25 @@ def main() -> None:
             ch = tracking.update_history(m, as_of, stocks)
             live = tracking.update_live(m, as_of, stocks, model, float(fetch_benchmark(m).iloc[-1]))
             reb = live["rebalances"][-1] if live["rebalances"] and live["rebalances"][-1]["date"] == as_of else None
+        try:
+            view = market_view.build(m, stocks, fetch_benchmark(m), tracking.t1_counts(m))
+        except Exception as e:  # noqa: BLE001 — 시장 탭 실패가 채점 결과 저장을 막지 않게
+            log.warning("%s 시장폭·섹터 계산 실패: %s", m, e)
+            view = None
+        mk["market_view"] = view
+        if view:
+            b = view["breadth"]
+            log.info("%s 시장폭: 200일선 위 %.0f%% (%s) · 괴리 %s · 섹터 %d개", m, b["a200"] * 100, b["zone"],
+                     b["divergence"], len(view["sectors"]))
+        if args.track and as_of:
+            mlines = market_view.update_state(m, view) if view else []
+            items = ch["items"] if ch["is_new"] and ch["prev"] else []
+            if items or (ch["is_new"] and reb and ch["prev"]) or mlines:
+                alerts.append(tracking.alert_html(m, {**ch, "items": items}, macro,
+                                                  reb if ch["is_new"] else None, mlines))
             if ch["is_new"]:
-                if ch["prev"] and (ch["items"] or reb):
-                    alerts.append(tracking.alert_html(m, ch, macro, reb))
                 tracking.mark_notified(m, as_of)
-            log.info("%s 등급 변화: %d건 (직전 %s)", m, len(ch["items"]), ch["prev"])
+            log.info("%s 등급 변화: %d건 (직전 %s) · 시장 변화 %d건", m, len(ch["items"]), ch["prev"], len(mlines))
         mk["changes"] = tracking.last_changes(m, {t: r["name"] for t, r in stocks.items()})
         mk["timeline"] = tracking.timelines(m)
     if args.track:

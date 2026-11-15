@@ -16,3 +16,4 @@
 - 등급 색은 dataviz 팔레트 dark 단계(aqua·blue·orange) + 회색. Tier 는 위치·모양·라벨로도 구분되게 유지
 - 비밀값은 `.env` (커밋 금지)
 - `--track`(등급 이력·실전 기록)은 CI 예약/수동 실행 전용. 로컬에서 돌리면 이력이 갈라진다
+- 시장 탭 계산은 `zscore/market.py`, 임계값은 `config.BREADTH_*`·`DIVERGENCE`·`RRG` (프론트는 `config.market` 을 읽는다)

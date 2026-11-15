@@ -103,6 +103,12 @@ def last_changes(market: str, names: dict[str, str]) -> dict[str, Any]:
     return {"as_of": dates[-1], "prev": dates[-2], "items": diff(snaps[dates[-2]], snaps[dates[-1]], names)}
 
 
+def t1_counts(market: str) -> list[list]:
+    """기준일별 Tier 1 종목 수 [[날짜, 개수], ...]."""
+    snaps = _read(C.TIER_HISTORY_PATH, {}).get(market, {}).get("snapshots", {})
+    return [[d, sum(1 for v in snaps[d].values() if v[0] == 1)] for d in sorted(snaps)]
+
+
 def timelines(market: str) -> dict[str, Any]:
     """종목별 최근 TIMELINE_DAYS 기준일의 등급 문자열 (예: '1112223', 결측은 '-')."""
     snaps = _read(C.TIER_HISTORY_PATH, {}).get(market, {}).get("snapshots", {})
@@ -200,8 +206,9 @@ MARKET_LABEL = {"US": "🇺🇸 미국", "KR": "🇰🇷 한국"}
 
 
 def alert_html(market: str, changes: dict[str, Any], macro: dict[str, Any],
-               rebalanced: dict[str, Any] | None) -> str:
-    lines = [f"<b>주도주 스코어 · {MARKET_LABEL[market]}</b> ({changes['as_of']}, 직전 {changes['prev']})"]
+               rebalanced: dict[str, Any] | None, market_lines: list[str] | None = None) -> str:
+    since = f", 직전 {changes['prev']}" if changes.get("prev") else ""
+    lines = [f"<b>주도주 스코어 · {MARKET_LABEL[market]}</b> ({changes['as_of']}{since})"]
     if macro.get("available"):
         lines.append(f"국면 {macro['regime']} <i>{escape(macro['regime_name'] or '')}</i> · "
                      f"주식 비중 {macro['equity_weight']:.0%}")
@@ -210,6 +217,8 @@ def alert_html(market: str, changes: dict[str, Any], macro: dict[str, Any],
         s = f"{escape(c['name'])} T{c['from']}→T{c['to']}" if c["kind"] != "flag" else \
             f"{escape(c['name'])} (T{c['to']}): " + ", ".join(FLAG_LABEL.get(f, f) for f in c["flags"])
         groups.setdefault(c["kind"], []).append(s)
+    if market_lines:
+        lines.append("\n<b>🌐 시장폭 · 섹터 주도력</b>\n" + "\n".join(market_lines))
     for kind, label in KIND_LABEL.items():
         if kind in groups:
             lines.append(f"\n<b>{label}</b>\n" + "\n".join(f"• {x}" for x in groups[kind]))

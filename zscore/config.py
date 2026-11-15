@@ -165,3 +165,21 @@ ALERT_PATH = ROOT / "data" / "alert_pending.html"   # notify 단계가 보내고
 HISTORY_KEEP = 260            # 시장별 보관 스냅샷 수 (약 1년)
 TIMELINE_DAYS = 60            # 종목 화면의 등급 타임라인 길이
 DASHBOARD_URL = "https://isk2026.github.io/zscore/"
+
+# ── 시장 탭: 바스켓 시장폭 · 섹터 주도력 지도 ──────────────────────────────
+BREADTH_DAYS = 260                 # 차트에 보낼 일수
+BREADTH_NEAR_HIGH = 0.95           # 52주 고점 5% 이내
+BREADTH_ZONES = (0.40, 0.60)       # 200일선 위 비율: <40% 약함 · 40~60% 중립 · ≥60% 강함
+BREADTH_HYSTERESIS = 0.03          # 경계 깜빡임 방지 (구간 전환은 경계 ±3%p 를 넘어야)
+# 지수 ≥ 52주 고점×97% 인데 50일선 위 비율이 최근 63거래일 고점보다 15%p 이상 낮으면 '시장폭 괴리'
+DIVERGENCE = {"index_near_high": 0.97, "drop": 0.15, "lookback": 63}
+# RS = 섹터 동일가중 지수 / 시장 지수 (주간, 완료된 주만)
+# RS-Ratio = 100 × RS / RS 10주 평균 · RS-Momentum = 100 × Ratio / 4주 전 Ratio
+RRG = {"ma_weeks": 10, "mom_weeks": 4, "tail": 8, "min_members": 3}
+MARKET_STATE_PATH = ROOT / "data" / "market_state.json"
+SECTOR_KO = {
+    "Technology": "기술", "Consumer Cyclical": "경기소비재", "Healthcare": "헬스케어",
+    "Financial Services": "금융", "Industrials": "산업재", "Communication Services": "커뮤니케이션",
+    "Utilities": "유틸리티", "Consumer Defensive": "필수소비재", "Energy": "에너지",
+    "Basic Materials": "소재", "Real Estate": "부동산",
+}

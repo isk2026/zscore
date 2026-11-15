@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, LayoutGrid, Shield, AlertCircle, Play, ExternalLink, LineChart } from 'lucide-react'
+import { Activity, LayoutGrid, Shield, AlertCircle, Play, ExternalLink, LineChart, Globe } from 'lucide-react'
 import TopBar from './components/TopBar.jsx'
 import StockView from './components/StockView.jsx'
 import Screener from './components/Screener.jsx'
 import PortfolioFencer from './components/PortfolioFencer.jsx'
 import Backtest from './components/Backtest.jsx'
+import Market from './components/Market.jsx'
 import { LS, RUN_URL } from './lib.js'
 
 const TABS = [
   { id: 'stock', label: '종목 분석', short: '분석', icon: Activity },
+  { id: 'market', label: '시장', icon: Globe },
   { id: 'screener', label: '스크리너', icon: LayoutGrid },
   { id: 'fence', label: '포트폴리오 울타리', short: '울타리', icon: Shield },
   { id: 'backtest', label: '백테스트', icon: LineChart },
@@ -100,7 +102,7 @@ export default function App() {
             <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
               className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm transition sm:gap-2 sm:px-3 ${
                 tab === id ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-900 hover:text-gray-200'}`}>
-              <Icon size={16} className="max-[380px]:hidden" /> <span className="sm:hidden">{short || label}</span><span className="hidden sm:inline">{label}</span>
+              <Icon size={16} className="max-sm:hidden" /> <span className="sm:hidden">{short || label}</span><span className="hidden sm:inline">{label}</span>
             </button>
           ))}
         </nav>
@@ -132,6 +134,8 @@ export default function App() {
             : <div className="py-24 text-center text-gray-500">위 검색창에서 종목을 선택하세요.</div>
         ) : tab === 'screener' ? (
           <Screener data={data} market={market} setMarket={setMarket} onSelect={analyze} />
+        ) : tab === 'market' ? (
+          <Market data={data} market={market} setMarket={setMarket} onSelect={analyze} />
         ) : tab === 'backtest' ? (
           <Backtest market={market} setMarket={setMarket} data={data} />
         ) : (
