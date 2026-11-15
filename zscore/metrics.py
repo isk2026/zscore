@@ -131,7 +131,7 @@ def altman(raw: RawData, market_cap: float | None) -> dict[str, Any]:
 
 
 # ── 가격 ────────────────────────────────────────────────────────────────────
-def price_metrics(raw: RawData, bench: pd.Series | None) -> dict[str, Any]:
+def price_metrics(raw: RawData, bench: pd.Series | None, chart: bool = True) -> dict[str, Any]:
     p = raw.prices
     if p is None or len(p) < 30:
         return {}
@@ -167,6 +167,8 @@ def price_metrics(raw: RawData, bench: pd.Series | None) -> dict[str, Any]:
     vol = p["Volume"].reindex(close.index).fillna(0)
     out["avg_traded_value"] = float((close * vol).iloc[-20:].mean())
 
+    if not chart:
+        return out
     # 차트용 시계열 (최근 CHART_DAYS 거래일)
     ma = close.rolling(200).mean()
     tail = close.iloc[-C.CHART_DAYS:]
@@ -206,10 +208,11 @@ def earnings_metrics(raw: RawData) -> dict[str, Any]:
 
 
 # ── 종합 ────────────────────────────────────────────────────────────────────
-def compute_raw(raw: RawData, bench: pd.Series | None, name: str | None = None) -> dict[str, Any]:
+def compute_raw(raw: RawData, bench: pd.Series | None, name: str | None = None,
+                chart: bool = True) -> dict[str, Any]:
     info = raw.info
     inc, bal, cf = raw.income, raw.balance, raw.cashflow
-    pm = price_metrics(raw, bench)
+    pm = price_metrics(raw, bench, chart=chart)
     price = pm.get("price")
 
     shares = _row(bal, SHARES) or _num(info.get("sharesOutstanding"))

@@ -1,6 +1,7 @@
 import { Radar, Line } from 'react-chartjs-2'
 import { AlertTriangle, ShieldAlert, Info, CheckCircle2, XCircle, MinusCircle, Zap } from 'lucide-react'
 import { TIER_COLOR, FLAG_META, fmt, isNumber, scoreTone } from '../lib.js'
+import InfoTip from './InfoTip.jsx'
 
 const FACTOR_ORDER = ['cashflow', 'growth', 'profitability', 'stability', 'valuation', 'momentum']
 
@@ -13,6 +14,12 @@ const METRIC_LABEL = {
   ret_12_1: ['12-1M 수익률', 'pct'], high52_ratio: ['52주 고점 대비', 'pctPlain'], rel_strength: ['6M 상대강도 (vs 지수)', 'pct'],
   eps_revision: ['EPS 추정치 30일 변화', 'pct'],
 }
+const METRIC_TIP = {
+  fscore: 'fscore', altman_z_capped: 'altman', ret_12_1: 'ret_12_1', high52_ratio: 'high52',
+  rel_strength: 'rel_strength', eps_revision: 'eps_revision',
+}
+const FACTOR_TIP = { momentum: 'momentum_factor' }
+
 const FACTOR_METRICS = {
   cashflow: ['fcf_to_assets', 'ocf_to_assets', 'accruals'],
   growth: ['revenue_growth', 'earnings_growth'],
@@ -39,17 +46,17 @@ export function TierBadge({ tier, tiers, size = 'lg' }) {
       <span className={`flex items-center justify-center rounded-lg font-bold text-white ${big ? 'h-11 w-11 text-xl' : 'h-6 w-6 text-xs'}`}
         style={{ background: TIER_COLOR[tier] }}>{tier}</span>
       <div className="leading-tight">
-        <div className={`font-semibold text-white ${big ? 'text-lg' : 'text-sm'}`}>Tier {tier} · {t.name}</div>
+        <div className={`font-semibold text-white ${big ? 'text-lg' : 'text-sm'}`}>Tier {tier} · {t.name}{big && <InfoTip k="tier" className="ml-1" />}</div>
         {big && <div className="text-xs text-gray-400">{t.en} — {t.action}</div>}
       </div>
     </div>
   )
 }
 
-function MetricCard({ label, value, sub, tone, hint }) {
+function MetricCard({ label, value, sub, tone, tip }) {
   return (
-    <div className="panel min-w-0 p-4" title={hint}>
-      <div className="text-xs text-gray-400">{label}</div>
+    <div className="panel min-w-0 p-4">
+      <div className="flex items-center gap-1 text-xs text-gray-400">{label}<InfoTip k={tip} /></div>
       <div className={`num mt-1 text-3xl font-semibold ${tone}`}>{value}</div>
       <div className="mt-1 truncate text-xs text-gray-500" title={sub}>{sub}</div>
     </div>
@@ -176,7 +183,7 @@ function FactorTable({ stock, labels }) {
           {FACTOR_ORDER.map((f) => (
             [
               <tr key={f} className="border-b border-gray-800/60 bg-gray-900/40">
-                <td className="py-2 pr-3 font-medium text-gray-200">{labels[f]}</td>
+                <td className="py-2 pr-3 font-medium text-gray-200">{labels[f]} <InfoTip k={FACTOR_TIP[f] || f} /></td>
                 <td />
                 <td className={`num py-2 pr-3 text-right font-medium ${scoreTone(stock.factor_scores?.[f])}`}>
                   {fmt.n(stock.factor_scores?.[f], 1)}점
@@ -190,7 +197,7 @@ function FactorTable({ stock, labels }) {
                 const good = isNumber(z) ? (neg ? -z : z) : null
                 return (
                   <tr key={m} className="border-b border-gray-800/40">
-                    <td className="py-1.5 pl-4 pr-3 text-gray-400">{lab}</td>
+                    <td className="py-1.5 pl-4 pr-3 text-gray-400">{lab}{METRIC_TIP[m] && <InfoTip k={METRIC_TIP[m]} className="ml-1" />}</td>
                     <td className="num py-1.5 pr-3 text-right text-gray-300">{fmtMetric(stock[m], kind)}</td>
                     <td className="num py-1.5 pr-3 text-right text-gray-400">{isNumber(z) ? z.toFixed(2) : '–'}</td>
                     <td className="py-1.5">
@@ -225,7 +232,7 @@ function Checklist({ stock }) {
     <div className="grid gap-6 md:grid-cols-2">
       <div>
         <div className="mb-2 text-sm font-medium text-gray-200">
-          Piotroski F-Score <span className="num text-gray-400">{stock.fscore ?? '–'}/9</span>
+          Piotroski F-Score <InfoTip k="fscore" /> <span className="num text-gray-400">{stock.fscore ?? '–'}/9</span>
           {stock.fscore_available < 9 && <span className="ml-2 text-xs text-gray-500">({stock.fscore_available}개 기준 채점 후 9점 환산)</span>}
         </div>
         <ul className="space-y-1 text-sm">
@@ -241,7 +248,7 @@ function Checklist({ stock }) {
       </div>
       <div>
         <div className="mb-2 text-sm font-medium text-gray-200">
-          Altman Z-Score <span className="num text-gray-400">{fmt.n(stock.altman_z)}</span>
+          Altman Z-Score <InfoTip k="altman" /> <span className="num text-gray-400">{fmt.n(stock.altman_z)}</span>
           {stock.altman_note && <span className="ml-2 text-xs text-gray-500">{stock.altman_note}</span>}
         </div>
         <div className="mb-2 font-mono text-[11px] text-gray-500">Z = 1.2·X1 + 1.4·X2 + 3.3·X3 + 0.6·X4 + 0.999·X5</div>
@@ -296,27 +303,27 @@ export default function StockView({ stock, data, busy }) {
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard label="종합 점수 (펀더멘털)" value={fmt.n(stock.composite_score, 2)} tone={scoreTone(stock.composite_score)}
           sub={`바스켓 상위 ${isNumber(stock.composite_pct) ? Math.max(1, Math.round((1 - stock.composite_pct) * 100) || 1) : '–'}% · 기준 ≥ ${cfg.thresholds.tier_composite}`}
-          hint="현금흐름·성장·수익성·재무안정·밸류에이션 Z 가중합 → 3 + z (1~5)" />
+          tip="composite" />
         <MetricCard label="모멘텀 점수" value={fmt.n(stock.momentum_score, 2)} tone={scoreTone(stock.momentum_score)}
           sub={`12-1M ${fmt.pct(stock.ret_12_1, 0)} · 고점비 ${fmt.pctPlain(stock.high52_ratio)}`}
-          hint="12-1M 수익률·52주 고점 근접도·상대강도·EPS 추정치 변화 Z 가중합" />
-        <MetricCard label="Piotroski F-Score" value={`${stock.fscore ?? '–'}`}
+          tip="momentum" />
+        <MetricCard label="Piotroski F-Score" tip="fscore" value={`${stock.fscore ?? '–'}`}
           tone={stock.fscore >= cfg.thresholds.fscore_strong ? 'text-emerald-400' : stock.fscore < 4 ? 'text-red-400' : 'text-gray-200'}
           sub={stock.fscore >= cfg.thresholds.fscore_strong ? '우량 (7점 이상)' : stock.fscore < 4 ? '취약 (4점 미만)' : '보통'} />
-        <MetricCard label="Altman Z-Score" value={fmt.n(stock.altman_z, 2)}
+        <MetricCard label="Altman Z-Score" tip="altman" value={fmt.n(stock.altman_z, 2)}
           tone={!isNumber(stock.altman_z) ? 'text-gray-500' : stock.altman_z < cfg.thresholds.altman_distress ? 'text-red-400'
             : stock.altman_z < cfg.thresholds.altman_safe ? 'text-amber-400' : 'text-emerald-400'}
           sub={!isNumber(stock.altman_z) ? (stock.altman_note || '–') : stock.altman_z < 1.81 ? '부실 위험 구간' : stock.altman_z < 2.99 ? '회색 지대' : '안전 구간'} />
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-medium text-gray-300">위험 필터 · 함정 경고</h2>
+        <h2 className="text-sm font-medium text-gray-300">위험 필터 · 함정 경고 <InfoTip k="risk" /></h2>
         <RiskCards stock={stock} />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-5">
         <div className="panel min-w-0 p-4 lg:col-span-2">
-          <h2 className="mb-2 text-sm font-medium text-gray-300">6-팩터 점수 분포</h2>
+          <h2 className="mb-2 text-sm font-medium text-gray-300">6-팩터 점수 분포 <InfoTip k="factors" /></h2>
           <FactorRadar stock={stock} labels={labels} />
         </div>
         <div className="panel min-w-0 p-4 lg:col-span-3">
@@ -327,7 +334,7 @@ export default function StockView({ stock, data, busy }) {
 
       <section className="grid gap-4 lg:grid-cols-5">
         <div className="panel min-w-0 p-4 lg:col-span-3">
-          <h2 className="mb-3 text-sm font-medium text-gray-300">팩터 분해 (Z-Score)</h2>
+          <h2 className="mb-3 text-sm font-medium text-gray-300">팩터 분해 (Z-Score) <InfoTip k="zscore" /></h2>
           <FactorTable stock={stock} labels={labels} />
         </div>
         <div className="panel min-w-0 space-y-4 p-4 lg:col-span-2">

@@ -119,3 +119,25 @@ def test_normalize_ticker():
     assert normalize_ticker("brk.b") == "BRK-B"
     assert normalize_ticker("247540.kq") == "247540.KQ"
     assert C.UNIVERSE["KR"]["005930.KS"] == "삼성전자"
+
+
+# ── 백테스트 ────────────────────────────────────────────────────────────────
+def test_slice_raw_respects_report_lag():
+    from zscore.backtest import slice_raw
+    raw = healthy_raw()
+    idx = pd.bdate_range("2023-01-02", "2026-06-30")
+    raw.prices = pd.DataFrame({"Close": np.linspace(10, 20, len(idx)), "Volume": 1e6}, index=idx)
+    raw.info["marketCap"] = 999  # 현재 시총은 과거 시점에 쓰면 안 됨
+    s = slice_raw(raw, pd.Timestamp("2026-03-15"))  # FY2025(12/31) + 90일 = 2026-03-31 이전
+    assert list(s.income.columns) == list(pd.to_datetime(["2024-12-31", "2023-12-31"]))
+    assert s.prices.index[-1] <= pd.Timestamp("2026-03-15")
+    assert "marketCap" not in s.info
+    s2 = slice_raw(raw, pd.Timestamp("2026-04-30"))
+    assert s2.income.columns[0] == pd.Timestamp("2025-12-31")
+
+
+def test_perf_stats():
+    from zscore.backtest import perf
+    st = perf([0.1, -0.5, 0.2])
+    assert st["total"] == pytest.approx(1.1 * 0.5 * 1.2 - 1)
+    assert st["mdd"] == pytest.approx(-0.5)

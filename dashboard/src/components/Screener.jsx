@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Scatter } from 'react-chartjs-2'
 import { ArrowDownUp } from 'lucide-react'
 import { TIER_COLOR, TIER_SHAPE, FLAG_META, fmt, scoreTone } from '../lib.js'
+import InfoTip from './InfoTip.jsx'
 
 const quadrantPlugin = {
   id: 'quadrants',
@@ -66,9 +67,9 @@ function Matrix({ rows, cfg, onSelect }) {
 }
 
 const COLS = [
-  ['name', '종목'], ['tier', 'Tier'], ['composite_score', '종합'], ['momentum_score', '모멘텀'],
-  ['fscore', 'F'], ['altman_z', 'Altman'], ['ret_12_1', '12-1M'], ['high52_ratio', '고점비'],
-  ['eps_revision', 'EPS 수정'], ['pe', 'PER'],
+  ['name', '종목'], ['tier', 'Tier', 'tier'], ['composite_score', '종합', 'composite'], ['momentum_score', '모멘텀', 'momentum'],
+  ['fscore', 'F', 'fscore'], ['altman_z', 'Altman', 'altman'], ['ret_12_1', '12-1M', 'ret_12_1'], ['high52_ratio', '고점비', 'high52'],
+  ['eps_revision', 'EPS 수정', 'eps_revision'], ['pe', 'PER', 'pe'],
 ]
 
 export default function Screener({ data, market, setMarket, onSelect }) {
@@ -115,7 +116,7 @@ export default function Screener({ data, market, setMarket, onSelect }) {
 
       <section className="panel p-4">
         <div className="mb-1 flex items-baseline justify-between">
-          <h2 className="text-sm font-medium text-gray-300">4-Tier 매트릭스 — {market} 바스켓 {rows.length}종목</h2>
+          <h2 className="text-sm font-medium text-gray-300">4-Tier 매트릭스 — {market} 바스켓 {rows.length}종목 <InfoTip k="tier" /></h2>
           <span className="text-[11px] text-gray-500">점을 누르면 종목 분석으로 이동</span>
         </div>
         <Matrix rows={filtered} cfg={cfg} onSelect={onSelect} />
@@ -125,12 +126,13 @@ export default function Screener({ data, market, setMarket, onSelect }) {
         <table className="w-full min-w-[820px] text-sm">
           <thead>
             <tr className="border-b border-gray-800 text-left text-xs text-gray-500">
-              {COLS.map(([k, l]) => (
+              {COLS.map(([k, l, tip]) => (
                 <th key={k} className={`py-2 pr-3 font-normal ${k === 'name' ? '' : 'text-right'}`}>
                   <button className="inline-flex items-center gap-1 hover:text-gray-300"
                     onClick={() => setSort((s) => ({ key: k, dir: s.key === k ? -s.dir : -1 }))}>
                     {l} {sort.key === k && <ArrowDownUp size={11} />}
                   </button>
+                  {tip && <InfoTip k={tip} size={11} />}
                 </th>
               ))}
               <th className="py-2 font-normal">경고</th>

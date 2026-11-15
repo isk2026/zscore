@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, LayoutGrid, Shield, AlertCircle, Play, ExternalLink } from 'lucide-react'
+import { Activity, LayoutGrid, Shield, AlertCircle, Play, ExternalLink, LineChart } from 'lucide-react'
 import TopBar from './components/TopBar.jsx'
 import StockView from './components/StockView.jsx'
 import Screener from './components/Screener.jsx'
 import PortfolioFencer from './components/PortfolioFencer.jsx'
+import Backtest from './components/Backtest.jsx'
 import { LS, RUN_URL } from './lib.js'
 
 const TABS = [
   { id: 'stock', label: '종목 분석', icon: Activity },
   { id: 'screener', label: '스크리너', icon: LayoutGrid },
   { id: 'fence', label: '포트폴리오 울타리', icon: Shield },
+  { id: 'backtest', label: '백테스트', icon: LineChart },
 ]
 
 export default function App() {
@@ -130,6 +132,8 @@ export default function App() {
             : <div className="py-24 text-center text-gray-500">위 검색창에서 종목을 선택하세요.</div>
         ) : tab === 'screener' ? (
           <Screener data={data} market={market} setMarket={setMarket} onSelect={analyze} />
+        ) : tab === 'backtest' ? (
+          <Backtest market={market} setMarket={setMarket} />
         ) : (
           <PortfolioFencer data={data} universe={universe} extra={extra} />
         )}

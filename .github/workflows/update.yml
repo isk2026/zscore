@@ -49,12 +49,15 @@ jobs:
           REMOVE: ${{ github.event.inputs.remove }}
         run: uv run python -m zscore.export --refresh --add "$ADD" --remove "$REMOVE"
 
+      - name: Backtest
+        run: uv run python -m zscore.backtest
+
       - name: Commit data
         if: github.event_name != 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dashboard/public/data/screener.json data/extra_tickers.txt
+          git add dashboard/public/data/screener.json dashboard/public/data/backtest.json data/extra_tickers.txt
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "data: screener $(date -u +%F)"
           for i in 1 2 3; do git push && break; git pull --rebase; done

@@ -130,7 +130,13 @@ FENCE = {
     ],
 }
 
-PRICE_HISTORY_PERIOD = "2y"
+PRICE_HISTORY_PERIOD = "5y"   # 백테스트(재무 4년 + 12-1M 계산용 1년)까지 커버
 CHART_DAYS = 260
 FETCH_WORKERS = 8
 CACHE_HOURS = 12
+
+# ── 백테스트 ────────────────────────────────────────────────────────────────
+BACKTEST_PATH = ROOT / "dashboard" / "public" / "data" / "backtest.json"
+REPORT_LAG_DAYS = 90        # 회계연도 종료 후 이 기간이 지나야 해당 연간 재무를 "알았다"고 본다
+BACKTEST_COST = 0.001       # 편도 거래비용 10bp
+BACKTEST_MIN_COVERAGE = 0.7 # 바스켓의 70% 이상이 재무를 가진 첫 월말부터 시작
