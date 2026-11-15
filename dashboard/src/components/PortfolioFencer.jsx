@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Trash2, ShieldCheck, ShieldAlert, RotateCcw } from 'lucide-react'
 import { TIER_COLOR, FLAG_META, LS, fmt } from '../lib.js'
+import ModelPortfolio from './ModelPortfolio.jsx'
 
 const DEFAULT = [
   { ticker: 'NVDA', w: 9 }, { ticker: 'AVGO', w: 7 }, { ticker: 'MU', w: 6 }, { ticker: '000660.KS', w: 8 },
@@ -103,7 +104,9 @@ export default function PortfolioFencer({ data, universe, extra }) {
 
   return (
     <div className="space-y-4">
-      <section className={`flex items-start gap-3 rounded-xl border p-4 ${violations.length ? 'border-red-900/70 bg-red-950/25' : 'border-emerald-900/60 bg-emerald-950/20'}`}>
+      <ModelPortfolio data={data} onLoad={(xs) => { setItems(xs); window.scrollTo({ top: document.getElementById('zs-holdings')?.offsetTop - 80, behavior: 'smooth' }) }} />
+
+      <section id="zs-holdings" className={`flex items-start gap-3 rounded-xl border p-4 ${violations.length ? 'border-red-900/70 bg-red-950/25' : 'border-emerald-900/60 bg-emerald-950/20'}`}>
         {violations.length ? <ShieldAlert className="mt-0.5 shrink-0 text-red-400" /> : <ShieldCheck className="mt-0.5 shrink-0 text-emerald-400" />}
         <div className="text-sm">
           <div className="font-medium text-gray-100">{violations.length ? `울타리 위반 ${violations.length}건` : '모든 울타리 규칙 충족'}</div>

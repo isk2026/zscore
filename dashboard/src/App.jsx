@@ -133,7 +133,7 @@ export default function App() {
         ) : tab === 'screener' ? (
           <Screener data={data} market={market} setMarket={setMarket} onSelect={analyze} />
         ) : tab === 'backtest' ? (
-          <Backtest market={market} setMarket={setMarket} />
+          <Backtest market={market} setMarket={setMarket} data={data} />
         ) : (
           <PortfolioFencer data={data} universe={universe} extra={extra} />
         )}

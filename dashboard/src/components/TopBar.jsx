@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Search, RefreshCw, Server, ServerOff, Play } from 'lucide-react'
 import { TIER_COLOR, RUN_URL } from '../lib.js'
+import { RegimeChip } from './ModelPortfolio.jsx'
 
 function normalize(raw) {
   const t = raw.trim().toUpperCase()
@@ -128,7 +129,10 @@ export default function TopBar({ data, universe, market, setMarket, onSelect, ap
       </div>
       {data && (
         <div className="mx-auto max-w-7xl px-4 pb-2 text-[11px] text-gray-500">
-          기준일 US {data.markets.US?.as_of ?? '–'} · KR {data.markets.KR?.as_of ?? '–'} · 바스켓 US {data.markets.US?.rows.length ?? 0} / KR {data.markets.KR?.rows.length ?? 0}종목
+          <div className="flex flex-wrap gap-x-3">
+            <RegimeChip mk={data.markets.US} label="🇺🇸" /><RegimeChip mk={data.markets.KR} label="🇰🇷" />
+            <span className="hidden sm:inline">기준일 US {data.markets.US?.as_of ?? '–'} · KR {data.markets.KR?.as_of ?? '–'}</span>
+          </div>
         </div>
       )}
     </header>

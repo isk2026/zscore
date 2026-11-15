@@ -140,3 +140,28 @@ BACKTEST_PATH = ROOT / "dashboard" / "public" / "data" / "backtest.json"
 REPORT_LAG_DAYS = 90        # 회계연도 종료 후 이 기간이 지나야 해당 연간 재무를 "알았다"고 본다
 BACKTEST_COST = 0.001       # 편도 거래비용 10bp
 BACKTEST_MIN_COVERAGE = 0.7 # 바스켓의 70% 이상이 재무를 가진 첫 월말부터 시작
+
+# ── ① Beta Model 연동: 시장 국면 → 주식 비중 → Tier 예산 ───────────────────
+BETA_MODEL_URL = "https://isk2026.github.io/beta-model/data/beta_model.json"
+BETA_MODEL_LOCAL = ROOT.parent / "Beta Model" / "dashboard" / "public" / "data" / "beta_model.json"
+BETA_FALLBACK_EQUITY = 0.80   # Beta Model 을 못 읽으면 쓰는 주식 비중
+# 주식 몫 안에서 Tier 별 예산. 영상 원칙: 모멘텀 주도주(T3)는 추세가 꺾이면 가장 먼저 축소,
+# 공포 국면은 깊게 빠진 우량주(펀더멘털) 매수 기회 → T2 비중 확대
+TIER_BUDGET_BY_REGIME = {
+    1: {1: 0.70, 2: 0.15, 3: 0.15},   # 상승 따라가기
+    2: {1: 0.75, 2: 0.25, 3: 0.00},   # 미리 줄이기
+    3: {1: 0.60, 2: 0.40, 3: 0.00},   # 하락 방어
+    4: {1: 0.50, 2: 0.50, 3: 0.00},   # 최대 방어 / 공포
+}
+MODEL_TOP_N = {1: 10, 2: 5, 3: 5}     # Tier 안에서 (종합+모멘텀) 상위 N 종목만
+MODEL_EXCLUDE_FLAGS = {"momentum_crash", "theme_hype", "bankruptcy", "low_liquidity"}
+
+# ── ②③ 추적 (CI 에서만 --track) ─────────────────────────────────────────────
+TIER_HISTORY_PATH = ROOT / "data" / "tier_history.json"
+TIER_CHANGES_CSV = ROOT / "data" / "tier_changes.csv"
+LIVE_RECORD_PATH = ROOT / "data" / "live_record.json"
+LIVE_PUBLIC_PATH = ROOT / "dashboard" / "public" / "data" / "live.json"
+ALERT_PATH = ROOT / "data" / "alert_pending.html"   # notify 단계가 보내고 지운다 (git 제외)
+HISTORY_KEEP = 260            # 시장별 보관 스냅샷 수 (약 1년)
+TIMELINE_DAYS = 60            # 종목 화면의 등급 타임라인 길이
+DASHBOARD_URL = "https://isk2026.github.io/zscore/"

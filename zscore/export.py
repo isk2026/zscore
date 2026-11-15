@@ -5,6 +5,7 @@
     uv run python -m zscore.export --market KR
     uv run python -m zscore.export --add ASML,TSM,005490   # 추가 종목 등록(data/extra_tickers.txt) 후 채점
     uv run python -m zscore.export --remove ASML
+    uv run python -m zscore.export --refresh --track      # (CI) 등급 이력·실전 기록 갱신 + 알림 문구 생성
 """
 
 from __future__ import annotations
@@ -19,8 +20,10 @@ from datetime import UTC, datetime
 from typing import Any
 
 from . import config as C
+from . import tracking
 from .data import fetch, fetch_benchmark, market_of, normalize_ticker
 from .metrics import compute_raw
+from .portfolio import load_beta_model, macro_for, model_portfolio
 from .scoring import score_basket, score_external
 
 log = logging.getLogger("zscore")
@@ -107,6 +110,7 @@ def main() -> None:
     ap.add_argument("--market", choices=list(C.UNIVERSE), action="append")
     ap.add_argument("--add", default="", help="추가 종목 (쉼표/공백 구분)")
     ap.add_argument("--remove", default="", help="추가 종목에서 제거")
+    ap.add_argument("--track", action="store_true", help="등급 이력·실전 기록 갱신 (CI 전용 — 로컬에서 쓰면 이력이 갈라진다)")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -150,6 +154,34 @@ def main() -> None:
             "stocks": {r["ticker"]: r for r in scored},
             "extra": extra_scored,
         }
+
+    beta, beta_src = load_beta_model()
+    log.info("Beta Model: %s", beta_src)
+    alerts = []
+    for m in markets:
+        mk = payload["markets"][m]
+        stocks, as_of = mk["stocks"], mk["as_of"]
+        macro = macro_for(beta, m, beta_src)
+        model = model_portfolio(list(stocks.values()), macro)
+        mk["macro"], mk["model"] = macro, model
+        log.info("%s 모델: 국면 %s · 주식 %.0f%% · %d종목 · 현금 %.0f%%", m, macro.get("regime"),
+                 macro["equity_weight"] * 100, len(model["holdings"]), model["cash"] * 100)
+        if args.track and as_of:
+            ch = tracking.update_history(m, as_of, stocks)
+            live = tracking.update_live(m, as_of, stocks, model, float(fetch_benchmark(m).iloc[-1]))
+            reb = live["rebalances"][-1] if live["rebalances"] and live["rebalances"][-1]["date"] == as_of else None
+            if ch["is_new"]:
+                if ch["prev"] and (ch["items"] or reb):
+                    alerts.append(tracking.alert_html(m, ch, macro, reb))
+                tracking.mark_notified(m, as_of)
+            log.info("%s 등급 변화: %d건 (직전 %s)", m, len(ch["items"]), ch["prev"])
+        mk["changes"] = tracking.last_changes(m, {t: r["name"] for t, r in stocks.items()})
+        mk["timeline"] = tracking.timelines(m)
+    if args.track:
+        tracking.publish_live()
+        if alerts:
+            C.ALERT_PATH.write_text("\n\n".join(alerts), encoding="utf-8")
+            log.info("알림 문구 생성: %s", C.ALERT_PATH)
     C.EXPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     C.EXPORT_PATH.write_text(json.dumps(clean(payload), ensure_ascii=False, separators=(",", ":")),
                              encoding="utf-8")

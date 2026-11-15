@@ -3,6 +3,7 @@ import { Scatter } from 'react-chartjs-2'
 import { ArrowDownUp } from 'lucide-react'
 import { TIER_COLOR, TIER_SHAPE, FLAG_META, fmt, scoreTone } from '../lib.js'
 import InfoTip from './InfoTip.jsx'
+import Changes from './Changes.jsx'
 
 const quadrantPlugin = {
   id: 'quadrants',
@@ -113,6 +114,8 @@ export default function Screener({ data, market, setMarket, onSelect }) {
           ))}
         </div>
       </div>
+
+      <Changes mk={data.markets[market]} onSelect={onSelect} />
 
       <section className="panel p-4">
         <div className="mb-1 flex items-baseline justify-between">

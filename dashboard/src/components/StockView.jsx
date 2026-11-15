@@ -2,6 +2,7 @@ import { Radar, Line } from 'react-chartjs-2'
 import { AlertTriangle, ShieldAlert, Info, CheckCircle2, XCircle, MinusCircle, Zap } from 'lucide-react'
 import { TIER_COLOR, FLAG_META, fmt, isNumber, scoreTone } from '../lib.js'
 import InfoTip from './InfoTip.jsx'
+import { TierTimeline } from './Changes.jsx'
 
 const FACTOR_ORDER = ['cashflow', 'growth', 'profitability', 'stability', 'valuation', 'momentum']
 
@@ -292,6 +293,7 @@ export default function StockView({ stock, data, busy }) {
           </div>
           <TierBadge tier={stock.tier} tiers={cfg.tiers} />
         </div>
+        <TierTimeline mk={data.markets[stock.market]} ticker={stock.ticker} />
         {stock.single_condition && (
           <div className="mt-4 flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-xs text-gray-300">
             <Zap size={14} className="text-amber-400" />

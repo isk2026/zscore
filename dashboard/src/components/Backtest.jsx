@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import { AlertTriangle } from 'lucide-react'
 import InfoTip from './InfoTip.jsx'
+import LiveRecord from './LiveRecord.jsx'
 import { fmt, isNumber } from '../lib.js'
 
 // 등급 색은 lib 의 TIER_COLOR 와 동일, EW·지수는 등급과 겹치지 않는 노랑·밝은 회색 점선
@@ -67,7 +68,7 @@ function IcCard({ label, ic }) {
   )
 }
 
-export default function Backtest({ market, setMarket }) {
+export default function Backtest({ market, setMarket, data }) {
   const [bt, setBt] = useState(null)
   const [err, setErr] = useState(null)
   useEffect(() => {
@@ -84,15 +85,19 @@ export default function Backtest({ market, setMarket }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-sm font-medium text-gray-200">
-          월간 리밸런싱 백테스트 · {m.start} ~ {m.end} ({m.months}개월)
-        </h2>
+        <h2 className="text-sm font-medium text-gray-200">검증 — 실전 기록 · 백테스트</h2>
         <div className="ml-auto flex rounded-lg border border-gray-800 p-0.5">
           {['US', 'KR'].map((k) => (
             <button key={k} onClick={() => setMarket(k)} className={`rounded-md px-3 py-1 text-xs ${market === k ? 'bg-gray-700 text-white' : 'text-gray-400'}`}>{k}</button>
           ))}
         </div>
       </div>
+
+      <LiveRecord market={market} data={data} />
+
+      <h2 className="pt-2 text-sm font-medium text-gray-200">
+        월간 리밸런싱 백테스트 · {m.start} ~ {m.end} ({m.months}개월)
+      </h2>
 
       <section className="flex gap-3 rounded-xl border border-amber-900/60 bg-amber-950/20 p-4 text-sm text-amber-100/90">
         <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-400" />

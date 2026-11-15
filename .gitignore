@@ -7,3 +7,4 @@ __pycache__/
 data/cache/
 dashboard/node_modules/
 dashboard/dist/
+data/alert_pending.html
