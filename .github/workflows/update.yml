@@ -1,0 +1,45 @@
+name: update-screener
+
+# 평일 한국장 마감 뒤(16:40 KST)와 미국장 마감 뒤(07:20 KST) 재채점 → GitHub Pages 배포
+on:
+  schedule:
+    - cron: "40 7 * * 1-5"    # 16:40 KST
+    - cron: "20 22 * * 1-5"   # 07:20 KST (화~토)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update-screener
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - run: uv run pytest -q
+      - run: uv run python -m zscore.export --refresh
+      - name: Commit data
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add dashboard/public/data/screener.json
+          git diff --cached --quiet || git commit -m "data: screener $(date -u +%F)"
+          git push || (git pull --rebase && git push)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci && npm run build
+        working-directory: dashboard
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/dist
+      - uses: actions/deploy-pages@v4
