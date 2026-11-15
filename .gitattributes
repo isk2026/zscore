@@ -1,0 +1,6 @@
+# 줄바꿈 통일 (Windows / macOS / Linux, 여러 에디터·AI 도구가 같이 작업)
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.ico binary
+*.pkl binary

@@ -146,7 +146,7 @@ export default function App() {
         )}
       </main>
       <footer className="mx-auto max-w-7xl px-4 pb-8 text-xs leading-relaxed text-gray-600">
-        성상현 매크로비욘드 12부 「주도주는 규칙으로 고르고, 위험은 규칙으로 담으며, 성과는 규칙으로 검증한다」 프레임워크 구현.
+        성상현 매크로비욘드 12부 「주도주는 규칙으로 고르고, 위험은 규칙으로 담으며, 성과는 규칙으로 검증한다」 프레임워크 구현. <a href="https://github.com/isk2026/zscore/blob/main/docs/MANUAL.md" target="_blank" rel="noreferrer" className="text-gray-400 underline underline-offset-2 hover:text-gray-200">사용 설명서</a>.
         데이터: Yahoo Finance(yfinance) · 생성 {data?.generated_at?.replace('T', ' ').slice(0, 16)} UTC · 개인 투자 참고용이며 투자 권유가 아닙니다.
       </footer>
     </div>

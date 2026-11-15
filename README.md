@@ -3,17 +3,26 @@
 성상현 「매크로비욘드」 12부 **"2027년 주도주 완전 바뀐다"** 프레임워크 구현
 (`Reference.txt`). *주도주는 규칙으로 고르고, 위험은 규칙으로 담으며, 성과는 규칙으로 검증한다.*
 
+> 📘 **문서** — 사용법: [`docs/MANUAL.md`](docs/MANUAL.md) · 작업 규칙(모든 AI 도구 공통): [`AGENTS.md`](AGENTS.md) ·
+> 구조·데이터 계약: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · 새 PC·다른 도구로 작업: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
+
 ```
-zscore/                 Python 엔진
-  config.py             유니버스 · 팩터 가중치 · Tier 임계값 · 함정 규칙 · 울타리 기본값
-  data.py               1단계 yfinance 수집 (미국 + 한국 .KS/.KQ), data/cache 12시간 캐시
-  metrics.py            2단계 원지표: Piotroski F · Altman Z · 12-1M · 52주 고점비 · RS · EPS 수정 · 밸류에이션
-  scoring.py            3~4단계: 윈저라이즈 → Z-Score → 종합/모멘텀 → 4-Tier → 함정 경고
-  export.py             유니버스 채점 → dashboard/public/data/screener.json
-  backtest.py           시점 재현 월간 백테스트 → dashboard/public/data/backtest.json
-  api.py                (선택) 로컬 FastAPI — 유니버스 밖 종목 실시간 채점 + 종목 검색
+zscore/                 Python 배치 엔진 (JSON 생성)
+  config.py             모든 파라미터 — 유니버스 · 가중치 · Tier · 함정 · 울타리 · 국면 예산 · 시장폭 · 위험 · 수급
+  data.py               yfinance 수집 (미국 + 한국 .KS/.KQ), data/cache 12시간 캐시
+  metrics.py            원지표: Piotroski F · Altman Z · 12-1M · 52주 고점비 · RS · EPS 수정 · 밸류에이션
+  scoring.py            윈저라이즈 → Z-Score → 종합/모멘텀 → 4-Tier → 함정 경고
+  flows.py · explain.py 수급(표시 전용) · '왜 이 등급인가' · 데이터 신뢰도
+  portfolio.py          Beta Model 국면 → 모델 포트폴리오
+  market.py · risk.py   시장폭·섹터 주도력 지도 · 포트폴리오 위험 재료(risk.json)
+  tracking.py · notify.py  등급 변화·실전 기록 (CI --track) · 텔레그램
+  export.py             진입점 → dashboard/public/data/screener.json
+  backtest.py           시점 재현 월간 백테스트 · 팩터 모니터 → backtest.json
+  api.py                (선택) 로컬 FastAPI — 유니버스 밖 종목 실시간 채점
 tests/                  오프라인 단위 테스트 (합성 데이터)
-dashboard/              React + Vite + Tailwind 4 + Chart.js + lucide (Beta Model 과 같은 스택)
+dashboard/              React + Vite + Tailwind 4 + Chart.js (탭: 분석 · 시장 · 스크리너 · 울타리 · 백테스트)
+docs/                   MANUAL · ARCHITECTURE · DEVELOPMENT
+scripts/check.sh|ps1    커밋 전 테스트 · 린트 · 빌드
 ```
 
 ## 실행
@@ -34,9 +43,7 @@ uv run python -m uvicorn zscore.api:app --port 8000
 
 > Windows 애플리케이션 제어 정책이 `uvicorn.exe` 를 막으므로 `python -m uvicorn` 으로 실행한다.
 
-화면: **종목 분석**(스코어카드 · Tier 배지 · 6-팩터 레이더 · 가격/200일선/52주 고점 · 함정 경고 · 팩터 분해 · F/Altman 체크리스트),
-**스크리너**(4-Tier 매트릭스 산점도 · 정렬 표), **포트폴리오 울타리**(종목·섹터·클러스터·Tier 상한 위반 검사 + 규칙 적용 제안 비중).
-URL 로 바로 열기: `?tab=screener&market=KR`, `?tab=stock&ticker=005930.KS`.
+화면 사용법은 [`docs/MANUAL.md`](docs/MANUAL.md). URL 로 바로 열기: `?tab=screener&market=KR`, `?tab=stock&ticker=005930.KS`, `?tab=market`, `?cmp=NVDA,AVGO`.
 
 ## 휴대폰에서 보기 · 실행
 
