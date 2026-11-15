@@ -1,4 +1,5 @@
 # 유니버스 밖 추가 채점 종목 (한 줄에 하나). Run workflow 의 tickers 입력으로도 추가된다
+000100.KS
 005490.KS
 ASML
 TSM
