@@ -18,7 +18,7 @@ from . import config as C
 from .data import fetch, fetch_benchmark, market_of, normalize_ticker
 from .export import clean
 from .metrics import compute_raw
-from .scoring import _pct, score_one
+from .scoring import score_external
 
 log = logging.getLogger("zscore.api")
 app = FastAPI(title="Zscore 주도주 분석 API")
@@ -52,11 +52,7 @@ def analyze(ticker: str = Query(..., min_length=1), refresh: bool = False) -> di
     if raw.prices is None:
         raise HTTPException(404, f"{t} 시세를 찾을 수 없습니다")
     rec = compute_raw(raw, fetch_benchmark(mkt), C.UNIVERSE[mkt].get(t))
-    rec = score_one(rec, basket["stats"])
-    comp = sorted(r["composite_score"] for r in basket["rows"] if r["composite_score"] is not None)
-    mom = sorted(r["momentum_score"] for r in basket["rows"] if r["momentum_score"] is not None)
-    rec["composite_pct"] = _pct(comp, rec["composite_score"])
-    rec["momentum_pct"] = _pct(mom, rec["momentum_score"])
+    rec = score_external(rec, basket["stats"], basket["rows"])
     return clean({"stock": rec, "in_universe": t in basket["stocks"]})
 
 

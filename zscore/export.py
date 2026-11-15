@@ -3,6 +3,8 @@
     uv run python -m zscore.export            # 캐시(12시간) 사용
     uv run python -m zscore.export --refresh  # 전부 새로 받기
     uv run python -m zscore.export --market KR
+    uv run python -m zscore.export --add ASML,TSM,005490   # 추가 종목 등록(data/extra_tickers.txt) 후 채점
+    uv run python -m zscore.export --remove ASML
 """
 
 from __future__ import annotations
@@ -17,9 +19,9 @@ from datetime import UTC, datetime
 from typing import Any
 
 from . import config as C
-from .data import fetch, fetch_benchmark
+from .data import fetch, fetch_benchmark, market_of, normalize_ticker
 from .metrics import compute_raw
-from .scoring import score_basket
+from .scoring import score_basket, score_external
 
 log = logging.getLogger("zscore")
 
@@ -39,10 +41,26 @@ def clean(o: Any) -> Any:
     return o
 
 
-def build_market(market: str, refresh: bool = False) -> tuple[list[dict], dict]:
-    bench = fetch_benchmark(market, refresh=refresh)
-    names = C.UNIVERSE[market]
+def read_extra() -> list[str]:
+    p = C.EXTRA_TICKERS_PATH
+    if not p.exists():
+        return []
+    out = []
+    for line in p.read_text(encoding="utf-8").splitlines():
+        t = line.split("#")[0].strip()
+        if t:
+            out.append(normalize_ticker(t))
+    return list(dict.fromkeys(out))
 
+
+def write_extra(tickers: list[str]) -> None:
+    C.EXTRA_TICKERS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    lines = ["# 유니버스 밖 추가 채점 종목 (한 줄에 하나). Run workflow 의 tickers 입력으로도 추가된다",
+             *sorted(set(tickers))]
+    C.EXTRA_TICKERS_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _collect(tickers: list[str], bench, names: dict, refresh: bool) -> list[dict]:
     def one(t: str):
         try:
             return compute_raw(fetch(t, refresh=refresh), bench, names.get(t))
@@ -50,12 +68,27 @@ def build_market(market: str, refresh: bool = False) -> tuple[list[dict], dict]:
             log.warning("%s 실패: %s", t, e)
             return None
 
-    t0 = time.time()
     with ThreadPoolExecutor(C.FETCH_WORKERS) as ex:
-        recs = [r for r in ex.map(one, names) if r and r.get("price") is not None]
+        return [r for r in ex.map(one, tickers) if r and r.get("price") is not None]
+
+
+def build_market(market: str, refresh: bool = False, extra: list[str] | None = None):
+    bench = fetch_benchmark(market, refresh=refresh)
+    names = C.UNIVERSE[market]
+    t0 = time.time()
+    recs = _collect(list(names), bench, names, refresh)
     log.info("%s: %d/%d 종목 수집 (%.0fs)", market, len(recs), len(names), time.time() - t0)
     scored, stats = score_basket(recs)
-    return scored, stats
+    rows = [summary(r) for r in scored]
+    ext = [t for t in (extra or []) if market_of(t) == market and t not in names]
+    extra_scored = {}
+    for r in _collect(ext, bench, {}, refresh):
+        r = score_external(r, stats, rows)
+        r["_extra"] = True
+        extra_scored[r["ticker"]] = r
+    if ext:
+        log.info("%s 추가 종목: %d/%d 채점", market, len(extra_scored), len(ext))
+    return scored, stats, rows, extra_scored
 
 
 def summary(rec: dict) -> dict:
@@ -72,8 +105,18 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--refresh", action="store_true")
     ap.add_argument("--market", choices=list(C.UNIVERSE), action="append")
+    ap.add_argument("--add", default="", help="추가 종목 (쉼표/공백 구분)")
+    ap.add_argument("--remove", default="", help="추가 종목에서 제거")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+    split = lambda s: [normalize_ticker(x) for x in s.replace(",", " ").split() if x.strip()]
+    extra = read_extra()
+    if args.add or args.remove:
+        rm = set(split(args.remove))
+        extra = [t for t in dict.fromkeys(extra + split(args.add)) if t not in rm]
+        write_extra(extra)
+        log.info("추가 종목 목록: %s", ", ".join(extra) or "(없음)")
 
     markets = args.market or list(C.UNIVERSE)
     prev = {}
@@ -99,12 +142,13 @@ def main() -> None:
         },
     }
     for m in markets:
-        scored, stats = build_market(m, refresh=args.refresh)
+        scored, stats, rows, extra_scored = build_market(m, refresh=args.refresh, extra=extra)
         payload["markets"][m] = {
             "as_of": max((r.get("as_of") or "") for r in scored) if scored else None,
             "stats": stats,
-            "rows": [summary(r) for r in scored],
+            "rows": rows,
             "stocks": {r["ticker"]: r for r in scored},
+            "extra": extra_scored,
         }
     C.EXPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     C.EXPORT_PATH.write_text(json.dumps(clean(payload), ensure_ascii=False, separators=(",", ":")),

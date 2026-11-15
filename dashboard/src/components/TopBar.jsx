@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Search, RefreshCw, Server, ServerOff } from 'lucide-react'
-import { TIER_COLOR } from '../lib.js'
+import { Search, RefreshCw, Server, ServerOff, Play } from 'lucide-react'
+import { TIER_COLOR, RUN_URL } from '../lib.js'
 
 function normalize(raw) {
   const t = raw.trim().toUpperCase()
@@ -38,7 +38,7 @@ export default function TopBar({ data, universe, market, setMarket, onSelect, ap
 
   const known = new Set(local.map((r) => r.ticker))
   const items = [
-    ...local.map((r) => ({ ticker: r.ticker, name: r.name, tier: r.tier })),
+    ...local.map((r) => ({ ticker: r.ticker, name: r.name, tier: r.tier, extra: r.extra })),
     ...remote.filter((r) => !known.has(r.ticker)).map((r) => ({ ticker: r.ticker, name: r.name, exchange: r.exchange })),
   ]
 
@@ -88,12 +88,13 @@ export default function TopBar({ data, universe, market, setMarket, onSelect, ap
                     {it.tier ? (
                       <span className="rounded px-1.5 text-[11px] font-medium text-white" style={{ background: TIER_COLOR[it.tier] }}>T{it.tier}</span>
                     ) : <span className="text-[11px] text-gray-500">{it.exchange} · 실시간 채점</span>}
+                    {it.extra && <span className="text-[10px] text-gray-500">추가</span>}
                   </button>
                 </li>
               ))}
               {items.length === 0 && (
                 <li className="px-3 py-2 text-sm text-gray-500">
-                  유니버스에 없음 — Enter 로 {normalize(q)} {apiOk ? '실시간 채점' : '(로컬 API 필요)'}
+                  유니버스에 없음 — Enter 로 {normalize(q)} {apiOk ? '실시간 채점' : '추가 채점 안내'}
                 </li>
               )}
             </ul>
@@ -113,6 +114,12 @@ export default function TopBar({ data, universe, market, setMarket, onSelect, ap
             className="flex items-center gap-1.5 rounded-lg border border-gray-800 px-3 py-2 text-xs text-gray-300 hover:bg-gray-900 disabled:opacity-50">
             <RefreshCw size={14} className={busy ? 'animate-spin' : ''} /> <span className="hidden sm:inline">갱신</span>
           </button>
+          {!apiOk && (
+            <a href={RUN_URL} target="_blank" rel="noreferrer" title="GitHub Actions 에서 재채점 / 종목 추가 (Run workflow)"
+              className="flex items-center gap-1.5 rounded-lg border border-emerald-900 px-3 py-2 text-xs text-emerald-300 hover:bg-emerald-950">
+              <Play size={14} /> <span className="hidden sm:inline">실행</span>
+            </a>
+          )}
           <span title={apiOk ? '로컬 분석 API 연결됨 — 임의 종목 실시간 채점 가능' : '정적 모드 — 유니버스 종목만 조회'}
             className={`hidden items-center gap-1 text-[11px] md:flex ${apiOk ? 'text-emerald-400' : 'text-gray-500'}`}>
             {apiOk ? <Server size={13} /> : <ServerOff size={13} />} {apiOk ? 'API' : '정적'}

@@ -273,6 +273,7 @@ export default function StockView({ stock, data, busy }) {
           <div>
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <span className="font-mono">{stock.ticker}</span> · {stock.sector} · {stock.industry}
+              {stock._extra && !stock._live && <span className="rounded bg-gray-800 px-1.5 text-gray-300">추가 종목 · 바스켓 기준 채점</span>}
               {stock._live && <span className="rounded bg-sky-950 px-1.5 text-sky-300">{stock._inUniverse ? '실시간 재채점' : '유니버스 외 · 바스켓 기준 채점'}</span>}
             </div>
             <h1 className="mt-1 text-2xl font-semibold text-white">{stock.name}</h1>

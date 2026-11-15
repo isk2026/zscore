@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, LayoutGrid, Shield, AlertCircle } from 'lucide-react'
+import { Activity, LayoutGrid, Shield, AlertCircle, Play, ExternalLink } from 'lucide-react'
 import TopBar from './components/TopBar.jsx'
 import StockView from './components/StockView.jsx'
 import Screener from './components/Screener.jsx'
 import PortfolioFencer from './components/PortfolioFencer.jsx'
-import { LS } from './lib.js'
+import { LS, RUN_URL } from './lib.js'
 
 const TABS = [
   { id: 'stock', label: '종목 분석', icon: Activity },
@@ -22,12 +22,16 @@ export default function App() {
   const [ticker, setTicker] = useState(() => qs.get('ticker') || LS.get('zs.ticker', 'NVDA'))
   const [extra, setExtra] = useState({}) // API로 채점한 유니버스 밖 종목
   const [busy, setBusy] = useState(false)
+  const [missing, setMissing] = useState(null) // 정적 모드에서 찾지 못한 종목
 
   const loadData = useCallback(async () => {
     try {
       const r = await fetch(`./data/screener.json?t=${Date.now()}`)
       if (!r.ok) throw new Error(`screener.json ${r.status}`)
-      setData(await r.json())
+      const j = await r.json()
+      // 추가 종목(extra)은 바스켓 통계 밖 — 조회용으로 stocks 에 합친다 (스크리너 rows 에는 넣지 않음)
+      Object.values(j.markets).forEach((m) => { m.stocks = { ...(m.extra || {}), ...m.stocks } })
+      setData(j)
       setError(null)
     } catch (e) {
       setError(`데이터를 불러오지 못했습니다 (${e.message}). 먼저 python -m zscore.export 를 실행하세요.`)
@@ -45,18 +49,22 @@ export default function App() {
 
   const universe = useMemo(() => {
     if (!data) return []
-    return Object.values(data.markets).flatMap((m) => m.rows)
+    return Object.values(data.markets).flatMap((m) => [
+      ...m.rows,
+      ...Object.values(m.extra || {}).map((x) => ({ ticker: x.ticker, name: x.name, tier: x.tier, sector: x.sector, extra: true })),
+    ])
   }, [data])
 
   const analyze = useCallback(async (t, { refresh = false } = {}) => {
     setTicker(t)
     setTab('stock')
+    setMissing(null)
     const mkt = /\.(KS|KQ)$/.test(t) ? 'KR' : 'US'
     setMarket(mkt)
     const inUniverse = data?.markets?.[mkt]?.stocks?.[t]
     if (inUniverse && !refresh) return
     if (!apiOk) {
-      if (!inUniverse) setError(`${t} 는 유니버스에 없습니다. 임의 종목 분석은 로컬 API(uvicorn zscore.api:app) 실행 시 가능합니다.`)
+      if (!inUniverse) setMissing(t)
       return
     }
     setBusy(true)
@@ -103,6 +111,20 @@ export default function App() {
         )}
         {!data ? (
           !error && <div className="py-24 text-center text-gray-500">불러오는 중…</div>
+        ) : tab === 'stock' && !stock && (missing || ticker) && !busy ? (
+          <section className="panel mx-auto max-w-xl space-y-3 p-5 text-sm text-gray-300">
+            <div className="text-base font-medium text-white">{missing || ticker} 는 아직 채점되지 않았습니다</div>
+            <p>{apiOk ? '로컬 API 로 다시 검색하거나, ' : ''}GitHub Actions 로 추가 채점합니다 (약 3~5분). 추가된 종목은 이후 매일 자동 갱신됩니다.</p>
+            <ol className="list-decimal space-y-1 pl-5 text-gray-400">
+              <li>아래 버튼 → <b className="text-gray-200">Run workflow</b> 펼치기</li>
+              <li><b className="text-gray-200">tickers</b> 칸에 <code className="rounded bg-gray-800 px-1 text-gray-100">{missing || ticker}</code> 입력 → 초록 Run workflow</li>
+              <li>완료 후 이 페이지 상단 <b className="text-gray-200">갱신</b></li>
+            </ol>
+            <a href={RUN_URL} target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-600">
+              <Play size={16} /> GitHub 에서 실행 <ExternalLink size={14} />
+            </a>
+          </section>
         ) : tab === 'stock' ? (
           stock ? <StockView stock={stock} data={data} busy={busy} />
             : <div className="py-24 text-center text-gray-500">위 검색창에서 종목을 선택하세요.</div>

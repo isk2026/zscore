@@ -210,3 +210,13 @@ def _pct(sorted_vals: list[float], v: float | None) -> float | None:
     if v is None or not sorted_vals:
         return None
     return float(np.searchsorted(sorted_vals, v, side="right") / len(sorted_vals))
+
+
+def score_external(rec: dict[str, Any], stats: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """바스켓 밖 종목: 저장된 바스켓 통계로 채점하고 바스켓 대비 백분위를 붙인다."""
+    rec = score_one(rec, stats)
+    comp = sorted(r["composite_score"] for r in rows if r.get("composite_score") is not None)
+    mom = sorted(r["momentum_score"] for r in rows if r.get("momentum_score") is not None)
+    rec["composite_pct"] = _pct(comp, rec["composite_score"])
+    rec["momentum_pct"] = _pct(mom, rec["momentum_score"])
+    return rec

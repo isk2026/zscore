@@ -36,6 +36,17 @@ uv run python -m uvicorn zscore.api:app --port 8000
 **스크리너**(4-Tier 매트릭스 산점도 · 정렬 표), **포트폴리오 울타리**(종목·섹터·클러스터·Tier 상한 위반 검사 + 규칙 적용 제안 비중).
 URL 로 바로 열기: `?tab=screener&market=KR`, `?tab=stock&ticker=005930.KS`.
 
+## 휴대폰에서 보기 · 실행
+
+- 대시보드: **https://isk2026.github.io/zscore/** — 휴대폰 브라우저 → 공유 → "홈 화면에 추가"하면 앱처럼 열린다 (PWA)
+- **재채점 / 종목 추가**: 상단 ▷ **실행** 버튼 → GitHub *Run workflow* 펼치기 →
+  `tickers` 에 종목 입력(예: `ASML, TSM, 000100`, 비우면 재채점만) → 초록 *Run workflow* → 약 3~5분 뒤 대시보드 **갱신**
+  - 추가 종목은 `data/extra_tickers.txt` 에 남아 이후 매일 같이 갱신된다. 빼려면 `remove` 칸에 입력
+  - 추가 종목은 바스켓 통계(μ·σ)에 영향을 주지 않고 같은 기준으로 채점된다 (스크리너 매트릭스에는 안 나오고 검색·포트폴리오에서 조회)
+  - 공개 페이지에 쓰기 토큰을 넣을 수 없어 GitHub 실행 페이지로 연결한다 (저장소 주인만 실행 가능)
+- 자동 갱신: 평일 16:40 KST(한국 마감 후), 07:20 KST(미국 마감 후). GitHub 예약 실행은 수십 분~수 시간 늦을 수 있다
+- 로컬 PC: `uv run python -m zscore.export --add ASML` 로도 추가 가능
+
 ## 점수 체계
 
 | 단계 | 내용 |

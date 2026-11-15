@@ -1,11 +1,24 @@
 name: update-screener
 
-# 평일 한국장 마감 뒤(16:40 KST)와 미국장 마감 뒤(07:20 KST) 재채점 → GitHub Pages 배포
+# 재채점 → screener.json 커밋 → GitHub Pages 배포.
+# 휴대폰: 대시보드 '실행' 버튼 → Run workflow (tickers 에 종목을 넣으면 추가 채점)
 on:
   schedule:
-    - cron: "40 7 * * 1-5"    # 16:40 KST
-    - cron: "20 22 * * 1-5"   # 07:20 KST (화~토)
+    - cron: "40 7 * * 1-5"    # 16:40 KST (한국장 마감 후)
+    - cron: "20 22 * * 1-5"   # 07:20 KST 화~토 (미국장 마감 후)
+  push:
+    branches: [main]
+    paths: ["dashboard/src/**", "dashboard/index.html", "dashboard/public/**", "zscore/**"]
   workflow_dispatch:
+    inputs:
+      tickers:
+        description: "추가 채점 종목 (쉼표 구분, 예: ASML, TSM, 005490) — 비우면 재채점만"
+        required: false
+        default: ""
+      remove:
+        description: "추가 종목에서 제거 (쉼표 구분)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -17,29 +30,53 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  update:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
     steps:
       - uses: actions/checkout@v4
+
       - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
       - run: uv sync --frozen
       - run: uv run pytest -q
-      - run: uv run python -m zscore.export --refresh
+
+      - name: Score universe
+        env:
+          ADD: ${{ github.event.inputs.tickers }}
+          REMOVE: ${{ github.event.inputs.remove }}
+        run: uv run python -m zscore.export --refresh --add "$ADD" --remove "$REMOVE"
+
       - name: Commit data
+        if: github.event_name != 'push'
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          git add dashboard/public/data/screener.json
-          git diff --cached --quiet || git commit -m "data: screener $(date -u +%F)"
-          git push || (git pull --rebase && git push)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dashboard/public/data/screener.json data/extra_tickers.txt
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "data: screener $(date -u +%F)"
+          for i in 1 2 3; do git push && break; git pull --rebase; done
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
       - run: npm ci && npm run build
         working-directory: dashboard
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dashboard/dist
-      - uses: actions/deploy-pages@v4
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

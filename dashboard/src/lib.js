@@ -54,3 +54,8 @@ export const LS = {
     try { localStorage.setItem(key, JSON.stringify(v)) } catch { /* 사설 모드 등 */ }
   },
 }
+
+// 데이터 갱신·종목 추가는 GitHub Actions 가 한다. 공개 페이지에 쓰기 토큰을 넣을 수 없으므로
+// 실행 페이지로 연결한다 (저장소 주인만 'Run workflow' 가능) — Beta Model 과 같은 방식.
+export const REPO = 'isk2026/zscore'
+export const RUN_URL = `https://github.com/${REPO}/actions/workflows/update.yml`

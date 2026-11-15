@@ -15,6 +15,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CACHE_DIR = ROOT / "data" / "cache"
 EXPORT_PATH = ROOT / "dashboard" / "public" / "data" / "screener.json"
+# 유니버스 밖 추가 종목 — 바스켓 통계에는 영향 없이 같은 기준으로 채점 (휴대폰 Run workflow 로 추가)
+EXTRA_TICKERS_PATH = ROOT / "data" / "extra_tickers.txt"
 
 # ── 유니버스: 표준화 기준이 되는 동종 바스켓 ────────────────────────────────
 # 한국은 yfinance 영문 약칭이 읽기 어려워 이름을 직접 둔다.
