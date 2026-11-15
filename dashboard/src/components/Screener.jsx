@@ -4,6 +4,7 @@ import { ArrowDownUp } from 'lucide-react'
 import { TIER_COLOR, TIER_SHAPE, FLAG_META, fmt, scoreTone } from '../lib.js'
 import InfoTip from './InfoTip.jsx'
 import Changes from './Changes.jsx'
+import Compare, { MAX_COMPARE } from './Compare.jsx'
 
 const quadrantPlugin = {
   id: 'quadrants',
@@ -73,7 +74,7 @@ const COLS = [
   ['eps_revision', 'EPS 수정', 'eps_revision'], ['pe', 'PER', 'pe'],
 ]
 
-export default function Screener({ data, market, setMarket, onSelect }) {
+export default function Screener({ data, market, setMarket, onSelect, compare = [], setCompare, toggleCompare }) {
   const cfg = data.config
   const rows = data.markets[market]?.rows || []
   const [tierFilter, setTierFilter] = useState(new Set([1, 2, 3, 4]))
@@ -115,6 +116,8 @@ export default function Screener({ data, market, setMarket, onSelect }) {
         </div>
       </div>
 
+      <Compare data={data} list={compare} setList={setCompare} onSelect={onSelect} />
+
       <Changes mk={data.markets[market]} onSelect={onSelect} />
 
       <section className="panel p-4">
@@ -139,6 +142,7 @@ export default function Screener({ data, market, setMarket, onSelect }) {
                   {tip && <InfoTip k={tip} size={11} />}
                 </th>
               ))}
+              <th className="py-2 pr-3 text-right font-normal"><span className="inline-flex items-center gap-1">수급<InfoTip k="flows_col" size={11} /></span></th>
               <th className="py-2 font-normal">경고</th>
             </tr>
           </thead>
@@ -146,8 +150,18 @@ export default function Screener({ data, market, setMarket, onSelect }) {
             {filtered.map((r) => (
               <tr key={r.ticker} onClick={() => onSelect(r.ticker)} className="cursor-pointer border-b border-gray-800/50 hover:bg-gray-900">
                 <td className="sticky left-0 z-10 max-w-[9rem] bg-[#111827] py-2 pr-3 sm:max-w-none">
-                  <div className="truncate text-gray-100">{r.name}</div>
-                  <div className="truncate font-mono text-[11px] text-gray-500">{r.ticker} · {r.sector}</div>
+                  <div className="flex items-start gap-1.5">
+                    <button aria-label={`${r.name} 비교`} aria-pressed={compare.includes(r.ticker)}
+                      disabled={!compare.includes(r.ticker) && compare.length >= MAX_COMPARE}
+                      onClick={(e) => { e.stopPropagation(); toggleCompare(r.ticker) }}
+                      className={`-my-1 -ml-1 shrink-0 rounded p-1 text-xs leading-none disabled:opacity-30 ${compare.includes(r.ticker) ? 'text-sky-300' : 'text-gray-600 hover:text-gray-300'}`}>
+                      {compare.includes(r.ticker) ? '✓' : '＋'}
+                    </button>
+                    <div className="min-w-0">
+                      <div className="truncate text-gray-100">{r.name}</div>
+                      <div className="truncate font-mono text-[11px] text-gray-500">{r.ticker} · {r.sector}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="py-2 pr-3 text-right">
                   <span className="rounded px-1.5 py-0.5 text-xs font-medium text-white" style={{ background: TIER_COLOR[r.tier] }}>T{r.tier}</span>
@@ -160,6 +174,9 @@ export default function Screener({ data, market, setMarket, onSelect }) {
                 <td className="num py-2 pr-3 text-right text-gray-300">{fmt.pctPlain(r.high52_ratio)}</td>
                 <td className="num py-2 pr-3 text-right text-gray-300">{fmt.pct(r.eps_revision)}</td>
                 <td className="num py-2 pr-3 text-right text-gray-300">{fmt.n(r.pe, 1)}</td>
+                <td className="py-2 pr-3 text-right text-xs">
+                  {r.flow === 'good' ? <span className="text-emerald-400">▲ 매수</span> : r.flow === 'bad' ? <span className="text-red-400">▼ 매도</span> : <span className="text-gray-600">–</span>}
+                </td>
                 <td className="py-2">
                   <div className="flex flex-wrap gap-1">
                     {r.flags.map((f) => (

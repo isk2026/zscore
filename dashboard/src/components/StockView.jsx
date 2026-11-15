@@ -3,6 +3,7 @@ import { AlertTriangle, ShieldAlert, Info, CheckCircle2, XCircle, MinusCircle, Z
 import { TIER_COLOR, FLAG_META, fmt, isNumber, scoreTone } from '../lib.js'
 import InfoTip from './InfoTip.jsx'
 import { TierTimeline } from './Changes.jsx'
+import { WhyBox, FlowsPanel, QualityLine } from './StockExtras.jsx'
 
 const FACTOR_ORDER = ['cashflow', 'growth', 'profitability', 'stability', 'valuation', 'momentum']
 
@@ -269,7 +270,7 @@ function Checklist({ stock }) {
   )
 }
 
-export default function StockView({ stock, data, busy }) {
+export default function StockView({ stock, data, busy, compare = [], toggleCompare }) {
   const cfg = data.config
   const labels = cfg.factor_labels
   const up = (stock.change_pct ?? 0) >= 0
@@ -291,8 +292,17 @@ export default function StockView({ stock, data, busy }) {
               <span className="hidden text-xs text-gray-500 sm:inline">{stock.as_of} · 시총 {fmt.big(stock.market_cap, cur)}</span>
             </div>
           </div>
-          <TierBadge tier={stock.tier} tiers={cfg.tiers} />
+          <div className="flex flex-col items-end gap-2">
+            <TierBadge tier={stock.tier} tiers={cfg.tiers} />
+            {toggleCompare && (
+              <button onClick={() => toggleCompare(stock.ticker)} disabled={!compare.includes(stock.ticker) && compare.length >= 4}
+                className={`rounded-lg border px-3 py-1.5 text-xs disabled:opacity-40 ${compare.includes(stock.ticker) ? 'border-sky-700 bg-sky-950 text-sky-200' : 'border-gray-700 text-gray-300 hover:bg-gray-800'}`}>
+                {compare.includes(stock.ticker) ? `✓ 비교 목록 (${compare.length})` : `＋ 비교에 추가${compare.length ? ` (${compare.length})` : ''}`}
+              </button>
+            )}
+          </div>
         </div>
+        <WhyBox stock={stock} />
         <TierTimeline mk={data.markets[stock.market]} ticker={stock.ticker} />
         {stock.single_condition && (
           <div className="mt-4 flex items-center gap-2 rounded-lg bg-gray-900 px-3 py-2 text-xs text-gray-300">
@@ -300,6 +310,7 @@ export default function StockView({ stock, data, busy }) {
             한 가지 조건만 충족 ({stock.tier === 2 ? '펀더멘털 O · 추세 X' : '추세 O · 펀더멘털 X'}) — 원칙상 신규 매수 금지, {cfg.tiers[stock.tier].action}
           </div>
         )}
+        <QualityLine stock={stock} />
       </section>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -317,6 +328,8 @@ export default function StockView({ stock, data, busy }) {
             : stock.altman_z < cfg.thresholds.altman_safe ? 'text-amber-400' : 'text-emerald-400'}
           sub={!isNumber(stock.altman_z) ? (stock.altman_note || '–') : stock.altman_z < 1.81 ? '부실 위험 구간' : stock.altman_z < 2.99 ? '회색 지대' : '안전 구간'} />
       </section>
+
+      <FlowsPanel stock={stock} />
 
       <section className="space-y-2">
         <h2 className="text-sm font-medium text-gray-300">위험 필터 · 함정 경고 <InfoTip k="risk" /></h2>

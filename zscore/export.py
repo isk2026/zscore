@@ -20,8 +20,8 @@ from datetime import UTC, datetime
 from typing import Any
 
 from . import config as C
+from . import explain, flows, risk, tracking
 from . import market as market_view
-from . import risk, tracking
 from .data import fetch, fetch_benchmark, market_of, normalize_ticker
 from .metrics import compute_raw
 from .portfolio import load_beta_model, macro_for, model_portfolio
@@ -92,6 +92,10 @@ def build_market(market: str, refresh: bool = False, extra: list[str] | None = N
         extra_scored[r["ticker"]] = r
     if ext:
         log.info("%s 추가 종목: %d/%d 채점", market, len(extra_scored), len(ext))
+    every = scored + list(extra_scored.values())
+    flows.attach(every, refresh=refresh)
+    explain.attach(every, max((r.get("as_of") or "") for r in scored) if scored else None)
+    rows = [summary(r) for r in scored]  # 수급 신호 반영
     return scored, stats, rows, extra_scored
 
 
@@ -102,6 +106,7 @@ def summary(rec: dict) -> dict:
             "high52_ratio", "eps_revision", "pe", "factor_scores", "single_condition"]
     out = {k: rec.get(k) for k in keys}
     out["flags"] = [f["key"] for f in rec.get("flags", [])]
+    out["flow"] = (rec.get("flows") or {}).get("tone")
     return out
 
 
@@ -144,6 +149,7 @@ def main() -> None:
             "fence": C.FENCE,
             "min_traded_value": C.MIN_TRADED_VALUE,
             "benchmark": C.BENCHMARK,
+            "stale_hours": C.DATA_STALE_HOURS,
             "market": {"zones": C.BREADTH_ZONES, "near_high": C.BREADTH_NEAR_HIGH,
                        "divergence": C.DIVERGENCE, "rrg": C.RRG},
         },

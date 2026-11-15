@@ -132,6 +132,12 @@ export default function TopBar({ data, universe, market, setMarket, onSelect, ap
           <div className="flex flex-wrap gap-x-3">
             <RegimeChip mk={data.markets.US} label="🇺🇸" /><RegimeChip mk={data.markets.KR} label="🇰🇷" />
             <span className="hidden sm:inline">기준일 US {data.markets.US?.as_of ?? '–'} · KR {data.markets.KR?.as_of ?? '–'}</span>
+            {(() => {
+              const h = (Date.now() - new Date(data.generated_at).getTime()) / 3.6e6
+              return h > (data.config.stale_hours ?? 72)
+                ? <span className="text-amber-300">⚠ 데이터 {Math.floor(h / 24)}일 전 갱신 — 자동 갱신 확인 필요</span>
+                : <span className="hidden sm:inline">· 갱신 {Math.max(0, Math.round(h))}시간 전</span>
+            })()}
           </div>
         </div>
       )}

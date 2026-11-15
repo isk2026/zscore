@@ -27,6 +27,8 @@ export default function App() {
   const [extra, setExtra] = useState({}) // API로 채점한 유니버스 밖 종목
   const [busy, setBusy] = useState(false)
   const [missing, setMissing] = useState(null) // 정적 모드에서 찾지 못한 종목
+  const [compare, setCompare] = useState(() => (qs.get('cmp') ? qs.get('cmp').split(',') : LS.get('zs.compare', [])))
+  const toggleCompare = useCallback((t) => setCompare((xs) => (xs.includes(t) ? xs.filter((x) => x !== t) : xs.length >= 4 ? xs : [...xs, t])), [])
 
   const loadData = useCallback(async () => {
     try {
@@ -50,6 +52,7 @@ export default function App() {
   useEffect(() => LS.set('zs.tab', tab), [tab])
   useEffect(() => LS.set('zs.market', market), [market])
   useEffect(() => LS.set('zs.ticker', ticker), [ticker])
+  useEffect(() => LS.set('zs.compare', compare), [compare])
 
   const universe = useMemo(() => {
     if (!data) return []
@@ -130,10 +133,10 @@ export default function App() {
             </a>
           </section>
         ) : tab === 'stock' ? (
-          stock ? <StockView stock={stock} data={data} busy={busy} />
+          stock ? <StockView stock={stock} data={data} busy={busy} compare={compare} toggleCompare={toggleCompare} />
             : <div className="py-24 text-center text-gray-500">위 검색창에서 종목을 선택하세요.</div>
         ) : tab === 'screener' ? (
-          <Screener data={data} market={market} setMarket={setMarket} onSelect={analyze} />
+          <Screener data={data} market={market} setMarket={setMarket} onSelect={analyze} compare={compare} setCompare={setCompare} toggleCompare={toggleCompare} />
         ) : tab === 'market' ? (
           <Market data={data} market={market} setMarket={setMarket} onSelect={analyze} />
         ) : tab === 'backtest' ? (

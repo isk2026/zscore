@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import math
+import time
 from typing import Any
 
 import numpy as np
@@ -259,4 +260,8 @@ def compute_raw(raw: RawData, bench: pd.Series | None, name: str | None = None,
     rec["altman_z_capped"] = None if az is None else float(np.clip(az, -2, 10))
     rec.update(earnings_metrics(raw))
     rec.update(pm)
+    fy = inc.columns[0] if inc is not None and not inc.empty and len(inc.columns) else None
+    rec["fy_end"] = fy.strftime("%Y-%m-%d") if hasattr(fy, "strftime") else None
+    rec["fetched_at"] = (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(raw.fetched_at))
+                         if raw.fetched_at else None)
     return rec

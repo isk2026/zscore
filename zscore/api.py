@@ -15,6 +15,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import config as C
+from . import explain, flows
 from .data import fetch, fetch_benchmark, market_of, normalize_ticker
 from .export import clean
 from .metrics import compute_raw
@@ -53,6 +54,8 @@ def analyze(ticker: str = Query(..., min_length=1), refresh: bool = False) -> di
         raise HTTPException(404, f"{t} 시세를 찾을 수 없습니다")
     rec = compute_raw(raw, fetch_benchmark(mkt), C.UNIVERSE[mkt].get(t))
     rec = score_external(rec, basket["stats"], basket["rows"])
+    flows.attach([rec])
+    explain.attach([rec], basket.get("as_of"))
     return clean({"stock": rec, "in_universe": t in basket["stocks"]})
 
 

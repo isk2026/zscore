@@ -140,6 +140,8 @@ def run_market(market: str, refresh: bool = False) -> dict[str, Any]:
     turnover: dict[str, list[float]] = {k: [] for k in PORTS}
     prev_w: dict[str, dict[str, float]] = {k: {} for k in PORTS}
     ic_comp, ic_mom, tier_log = [], [], []
+    f_ic: dict[str, list] = {f: [] for f in C.FACTORS}
+    f_spread: dict[str, list] = {f: [] for f in C.FACTORS}
     period_dates = []
 
     for (d0, scored), (d1, _) in itertools.pairwise(snaps):
@@ -167,6 +169,14 @@ def run_market(market: str, refresh: bool = False) -> dict[str, Any]:
                  if r["ticker"] in fwd and r["composite_score"] is not None and r["momentum_score"] is not None]
         ic_comp.append(_spearman([p[0] for p in pairs], [p[2] for p in pairs]))
         ic_mom.append(_spearman([p[1] for p in pairs], [p[2] for p in pairs]))
+        # 팩터 성과 모니터: 팩터별 IC 와 상위 1/3 − 하위 1/3 수익 차이
+        for f in C.FACTORS:
+            fp = sorted(((r["factor_z"][f], fwd[r["ticker"]]) for r in scored
+                         if r["ticker"] in fwd and (r.get("factor_z") or {}).get(f) is not None), key=lambda x: x[0])
+            f_ic[f].append(_spearman([a for a, _ in fp], [b for _, b in fp]))
+            k = len(fp) // 3
+            f_spread[f].append(float(np.mean([b for _, b in fp[-k:]]) - np.mean([b for _, b in fp[:k]]))
+                               if k >= 3 else None)
         tier_log.append({
             "date": d0.strftime("%Y-%m-%d"),
             "T1": sorted((r["ticker"] for r in scored if r["tier"] == 1),
@@ -206,6 +216,7 @@ def run_market(market: str, refresh: bool = False) -> dict[str, Any]:
         "ic": {"composite": ic_stats(ic_comp), "momentum": ic_stats(ic_mom),
                "composite_series": ic_comp, "momentum_series": ic_mom},
         "tier1_history": tier_log[-6:],
+        "factors": {"labels": C.FACTOR_LABELS, "ic": f_ic, "spread": f_spread},
         "names": names_map,
     }
 

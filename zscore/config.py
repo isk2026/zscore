@@ -189,6 +189,30 @@ STRESS_WINDOWS = [                 # 과거 하락 구간 재현 (시작 전날 
     {"name": "2025-04 관세 충격", "start": "2025-04-02", "end": "2025-04-08"},
 ]
 # + 시장별 '최근 1년 지수 최대 낙폭 구간' 을 자동으로 추가
+
+# ── 수급 (표시 전용 — 점수에는 넣지 않는다: 백테스트로 효과 확인 전) ─────────
+FLOWS_DAYS = 20                    # 한국: 외국인·기관 순매수 합산 기간 (거래일)
+FLOWS_URL = "https://m.stock.naver.com/api/stock/{code}/trend?pageSize=30"
+SHORT_HIGH = 0.10                  # 미국: 유통주식 대비 공매도 ≥ 10% → 공매도 비중 높음
+SHORT_CHANGE = 0.20                # 미국: 공매도 잔고 전월 대비 ±20% → 급증 / 감소
+
+# ── '왜 이 등급인가' 요약 · 데이터 신뢰도 ────────────────────────────────────
+WHY_STRONG_Z = 0.5                 # 팩터 z ≥ 0.5 (약 상위 30%) → 강점으로 언급
+WHY_WEAK_Z = -0.5
+METRIC_LABELS = {
+    "fcf_to_assets": ("FCF/총자산", "pct"), "ocf_to_assets": ("영업CF/총자산", "pct"),
+    "accruals": ("발생액/총자산", "pct"), "revenue_growth": ("매출 성장률", "pct"),
+    "earnings_growth": ("순이익 성장률", "pct"), "roe": ("ROE", "pct"), "roa": ("ROA", "pct"),
+    "gross_margin": ("매출총이익률", "pct"), "fscore": ("F-Score", "int"),
+    "altman_z_capped": ("Altman Z", "n"), "debt_to_equity": ("부채/자본", "n"),
+    "earnings_yield": ("이익수익률", "pct"), "fcf_yield": ("FCF 수익률", "pct"),
+    "book_to_price": ("B/P", "n"), "ret_12_1": ("12-1M 수익률", "pct"),
+    "high52_ratio": ("52주 고점 대비", "plain"), "rel_strength": ("6M 상대강도", "pct"),
+    "eps_revision": ("EPS 추정치 30일 변화", "pct"),
+}
+STALE_PRICE_DAYS = 5               # 바스켓 기준일보다 가격이 5일 넘게 오래되면 경고
+STALE_FY_DAYS = 456                # 최근 회계연도 종료가 15개월 넘게 지났으면 경고
+DATA_STALE_HOURS = 72             # 대시보드 데이터가 72시간 넘게 갱신 안 되면 상단 경고 (주말 공백 고려)
 SECTOR_KO = {
     "Technology": "기술", "Consumer Cyclical": "경기소비재", "Healthcare": "헬스케어",
     "Financial Services": "금융", "Industrials": "산업재", "Communication Services": "커뮤니케이션",

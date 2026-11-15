@@ -3,6 +3,7 @@ import { Line } from 'react-chartjs-2'
 import { AlertTriangle } from 'lucide-react'
 import InfoTip from './InfoTip.jsx'
 import LiveRecord from './LiveRecord.jsx'
+import FactorMonitor from './FactorMonitor.jsx'
 import { fmt, isNumber } from '../lib.js'
 
 // 등급 색은 lib 의 TIER_COLOR 와 동일, EW·지수는 등급과 겹치지 않는 노랑·밝은 회색 점선
@@ -151,6 +152,8 @@ export default function Backtest({ market, setMarket, data }) {
           {a.rebalance}. 해당 등급이 빈 달은 현금(0%). 지수는 가격지수(배당 제외), 종목은 배당 포함 수정주가.
         </p>
       </section>
+
+      <FactorMonitor m={m} />
 
       <section className="panel min-w-0 p-4">
         <h3 className="mb-2 text-sm font-medium text-gray-300">최근 리밸런싱 시점의 Tier 1 구성</h3>
