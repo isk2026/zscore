@@ -1,0 +1,4 @@
+date,market,ticker,name,from,to,kind,flags
+2026-11-16,US,JNJ,Johnson & Johnson,4,3,up,
+2026-11-16,US,RTX,RTX Corporation,4,3,up,
+2026-11-16,US,PANW,"Palo Alto Networks, Inc.",3,4,down,
