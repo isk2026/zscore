@@ -4,3 +4,4 @@ date,market,ticker,name,from,to,kind,flags
 2026-11-16,US,PANW,"Palo Alto Networks, Inc.",3,4,down,
 2026-11-17,US,SHOP,Shopify Inc.,4,1,enter_t1,
 2026-11-17,US,JNJ,Johnson & Johnson,3,4,down,
+2026-11-18,KR,042700.KS,한미반도체,2,1,enter_t1,
