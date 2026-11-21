@@ -13,3 +13,6 @@ date,market,ticker,name,from,to,kind,flags
 2026-11-20,US,AMAT,"Applied Materials, Inc.",1,2,exit_t1,
 2026-11-20,US,WMT,Walmart Inc.,4,3,up,
 2026-11-20,US,LMT,Lockheed Martin Corporation,4,3,up,
+2026-11-20,KR,000990.KS,DB하이텍,1,2,exit_t1,
+2026-11-20,KR,128940.KS,한미약품,1,1,flag,momentum_crash
+2026-11-20,KR,017670.KS,SK텔레콤,3,3,flag,momentum_crash

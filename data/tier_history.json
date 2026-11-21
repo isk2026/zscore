@@ -1498,7 +1498,9 @@
     ],
     "PLTR": [
      1,
-     []
+     [
+      "momentum_crash"
+     ]
     ],
     "SNOW": [
      4,
@@ -2973,7 +2975,8 @@
     "030200.KS": [
      1,
      [
-      "bankruptcy"
+      "bankruptcy",
+      "theme_hype"
      ]
     ],
     "033780.KS": [
@@ -3016,6 +3019,6 @@
     ]
    }
   },
-  "notified": "2026-11-19"
+  "notified": "2026-11-20"
  }
 }
