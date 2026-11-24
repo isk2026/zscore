@@ -19,3 +19,9 @@ date,market,ticker,name,from,to,kind,flags
 2026-11-23,US,WMT,Walmart Inc.,3,4,down,
 2026-11-23,US,LMT,Lockheed Martin Corporation,3,4,down,
 2026-11-24,KR,000810.KS,삼성화재,1,1,flag,momentum_crash
+2026-11-24,US,AMAT,"Applied Materials, Inc.",1,2,exit_t1,
+2026-11-24,US,SHOP,Shopify Inc.,1,2,exit_t1,
+2026-11-24,US,SNOW,Snowflake Inc.,4,3,up,
+2026-11-24,US,LMT,Lockheed Martin Corporation,4,3,up,
+2026-11-24,US,MRVL,"Marvell Technology, Inc.",1,1,flag,momentum_crash
+2026-11-24,US,SNOW,Snowflake Inc.,4,3,flag,momentum_crash
