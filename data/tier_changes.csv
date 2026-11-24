@@ -18,3 +18,4 @@ date,market,ticker,name,from,to,kind,flags
 2026-11-20,KR,017670.KS,SK텔레콤,3,3,flag,momentum_crash
 2026-11-23,US,WMT,Walmart Inc.,3,4,down,
 2026-11-23,US,LMT,Lockheed Martin Corporation,3,4,down,
+2026-11-24,KR,000810.KS,삼성화재,1,1,flag,momentum_crash
