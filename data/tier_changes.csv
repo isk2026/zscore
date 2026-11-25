@@ -25,3 +25,6 @@ date,market,ticker,name,from,to,kind,flags
 2026-11-24,US,LMT,Lockheed Martin Corporation,4,3,up,
 2026-11-24,US,MRVL,"Marvell Technology, Inc.",1,1,flag,momentum_crash
 2026-11-24,US,SNOW,Snowflake Inc.,4,3,flag,momentum_crash
+2026-11-25,KR,042700.KS,한미반도체,1,2,exit_t1,
+2026-11-25,KR,030200.KS,KT,1,1,flag,theme_hype
+2026-11-25,KR,034020.KS,두산에너빌리티,4,4,flag,bankruptcy
