@@ -31,3 +31,4 @@ date,market,ticker,name,from,to,kind,flags
 2026-11-25,US,SHOP,Shopify Inc.,1,2,exit_t1,
 2026-11-25,US,SNOW,Snowflake Inc.,3,4,down,
 2026-11-26,KR,042700.KS,한미반도체,2,1,enter_t1,
+2026-11-27,KR,042700.KS,한미반도체,1,2,exit_t1,
